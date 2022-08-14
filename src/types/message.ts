@@ -1,5 +1,22 @@
+export type MessageCategory = 'connection' | 'matchmaking' | 'game' | 'meeting';
+
 export type Message = {
     type: string;
-    content: any;
-    category: 'connection' | 'matchmaking' | 'game' | 'meeting';
+    payload?: Record<string, unknown>;
 }
+
+export type SimpleMessage = Message & {
+    payload: {
+        text: string;
+    };
+}
+
+export type ConnectionMessage = Message & {
+    payload: {
+        userId: string;
+    };
+}
+
+export type SendableMessage = Message & {
+    receivers: [string] | 'all';
+};
