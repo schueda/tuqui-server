@@ -1,4 +1,4 @@
-import { MatchmakingState, MatchmakingReducerReturn } from '../../state/matchmaking.state';
+import { MatchmakingState, MatchmakingReducerReturn } from '../../../types/state/matchmaking.state';
 import { SendableMessage, UserIdMessage } from '../../../types/message';
 
 export const onUserDisconnected = (state: MatchmakingState, message: UserIdMessage): MatchmakingReducerReturn => {
@@ -15,5 +15,5 @@ export const onUserDisconnected = (state: MatchmakingState, message: UserIdMessa
         receivers: state.users.filter(u => u.nickname).map(u => u.id)
     }
 
-    return [newState, [updateLobbyMessage]];
+    return [newState, [updateLobbyMessage], []];
 }

@@ -1,5 +1,5 @@
 import { UserIdMessage, SendableMessage } from '../../../types/message';
-import { MatchmakingState, MatchmakingReducerReturn } from '../../state/matchmaking.state';
+import { MatchmakingState, MatchmakingReducerReturn } from '../../../types/state/matchmaking.state';
 
 
 export type SendNicknameMessage = UserIdMessage & { payload: { nickname: string } };
@@ -7,7 +7,7 @@ export type SendNicknameMessage = UserIdMessage & { payload: { nickname: string 
 export const onSendNickname = (state: MatchmakingState, message: SendNicknameMessage): MatchmakingReducerReturn => {
     const user = state.users.find(u => u.id === message.payload.userId);
     if (!user) {
-        return [state, []];
+        return [state, [], []];
     }
 
     const newState = {
@@ -24,13 +24,13 @@ export const onSendNickname = (state: MatchmakingState, message: SendNicknameMes
         }),
     };
 
-    const PlayerEnteredLobbyMessage = <SendableMessage>{
+    const playerEnteredLobbyMessage = <SendableMessage>{
         type: 'playerEnteredLobby',
         payload: {
             users: newState.users
         },
         receivers: newState.users.filter(u => u.nickname).map(u => u.id)
     };
-    
-    return [newState, [PlayerEnteredLobbyMessage]];
+
+    return [newState, [playerEnteredLobbyMessage], []];
 }

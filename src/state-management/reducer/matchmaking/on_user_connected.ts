@@ -1,9 +1,9 @@
-import { MatchmakingState, MatchmakingReducerReturn } from '../../state/matchmaking.state';
+import { MatchmakingState, MatchmakingReducerReturn } from '../../../types/state/matchmaking.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 
 export const onUserConnected = (state: MatchmakingState, message: UserIdMessage): MatchmakingReducerReturn => {
     if (state.users.find(u => u.id === message.payload.userId)) {
-        return [state, []];
+        return [state, [], []];
     }
 
     const newState = {
@@ -22,6 +22,6 @@ export const onUserConnected = (state: MatchmakingState, message: UserIdMessage)
         receivers: message.payload.userId
     };
 
-    return [newState, [youreConnectedMessage]];
+    return [newState, [youreConnectedMessage], []];
 }
 
