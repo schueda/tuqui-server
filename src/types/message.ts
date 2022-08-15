@@ -11,12 +11,12 @@ export type SimpleMessage = Message & {
     };
 }
 
-export type ConnectionMessage = Message & {
+export type UserIdMessage = Message & {
     payload: {
         userId: string;
     };
 }
 
 export type SendableMessage = Message & {
-    receivers: [string] | 'all';
+    receivers: string[] | string;
 };

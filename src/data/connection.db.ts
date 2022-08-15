@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 import { logger } from '../logger';
-import { Message, ConnectionMessage } from '../types/message';
+import { Message, UserIdMessage } from '../types/message';
 
 export type UserConnectionEntry = {
     socket: Socket;
@@ -11,7 +11,7 @@ export type MessageReceiver = {
     callback: (message: Message) => void;
 }
 
-export type ConnectionReceiver = (message: ConnectionMessage) => void;
+export type ConnectionReceiver = (message: UserIdMessage) => void;
 
 export class ConnectionDatabase {
 
