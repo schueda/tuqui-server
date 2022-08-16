@@ -7,7 +7,7 @@ import { ConnectionService } from './logic/connection.logic';
 export class App {
     public app: express.Application;
     public server: Server;
-    private io: socketIo.Server;
+    public io: socketIo.Server;
     public PORT: number = 8100;
 
     constructor(
