@@ -23,7 +23,7 @@ export const buildApp = (() => {
     const connectionSvc = new ConnectionService(connectionDb);
     di.connectionSvc = connectionSvc;
 
-    const gameSvc = new GameService(gameDb);
+    const gameSvc = new GameService(gameDb, connectionSvc);
     di.gameSvc = gameSvc;
 
     const matchmakingSvc = new MatchmakingService(matchmakingDb, connectionSvc, gameSvc);
