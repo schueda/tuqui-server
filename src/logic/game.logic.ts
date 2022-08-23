@@ -1,19 +1,21 @@
-import { MatchmakingState, MatchmakingUser } from '../types/state/matchmaking.state';
+import { MatchmakingUser } from '../types/state/matchmaking.state';
 import { GameDatabase } from '../data/game.db';
 import { GameState, Player } from '../types/state/game.state';
-import { defaultGameRules, GameRules } from '../types/game_rules';
+import { defaultGameRules } from '../types/game_rules';
 import { ConnectionService } from './connection.logic';
 import { logger } from '../logger';
-import { defaultTags } from '../types/tags';
-import { SendableMessage, UserIdMessage } from '../types/message';
+import { UserIdMessage } from '../types/message';
 import { SchedulableAction } from '../types/action';
 import { ScannedMessage, onScanned } from '../state-management/reducer/game/on_scanned';
+import { onDeliverIngredients } from '../state-management/reducer/game/on_deliver_ingredients';
+import { onCallMeeting } from '../state-management/reducer/game/on_call_meeting';
 
 export class GameService {
 
     constructor(private db: GameDatabase, private connSvc: ConnectionService) {
         this.registerScannedMessage();
-        this.registerDeliverIngredient();
+        this.registerDeliverIngredients();
+        this.registerCallMeeting();
     }
 
     state: GameState;
@@ -60,19 +62,33 @@ export class GameService {
 
             const [newState, messages, actions] = onScanned(this.state, message);            
 
-
             this.db.updateGame(newState);
-
             messages.forEach(m => this.connSvc.emit(m));
-
             this.processActions(actions);
         });
     }
 
-    registerDeliverIngredient() {
-        this.connSvc.registerMessageReceiver("deliverIngredient", (message: UserIdMessage) => {
-            logger.debug(`[GameService.registerDeliverIngredient] Received deliver ingredient message ${JSON.stringify(message)}`);
-            // const [newState, messages, actions] 
+    registerDeliverIngredients() {
+        this.connSvc.registerMessageReceiver("deliverIngredients", (message: UserIdMessage) => {
+            logger.debug(`[GameService.registerDeliverIngredients] Received deliver ingredients message ${JSON.stringify(message)}`);
+
+            const [newState, messages, actions] = onDeliverIngredients(this.state, message);
+
+            this.db.updateGame(newState);
+            messages.forEach(m => this.connSvc.emit(m));
+            this.processActions(actions);
+        });
+    }
+
+    registerCallMeeting() {
+        this.connSvc.registerMessageReceiver("callMeeting", (message: UserIdMessage) => {
+            logger.debug(`[GameService.registerCallMeeting] Received call meeting message ${JSON.stringify(message)}`);
+
+            const [newState, messages, actions] = onCallMeeting(this.state, message);
+
+            this.db.updateGame(newState);
+            messages.forEach(m => this.connSvc.emit(m));
+            this.processActions(actions);
         });
     }
 
