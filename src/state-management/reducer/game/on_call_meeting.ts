@@ -28,7 +28,7 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
     const meetingCalledMessage = <SendableMessage>{
         type: 'meetingCalled',
         payload: {
-            players: newState.players.map(p => { p.id }),
+            players: newState.players,
             alivePlayers: newState.players.filter(p => p.isAlive).map(p => { p.id }),
             onMeetingPlayers: newState.players.filter(p => p.attendedToMeeting).map(p => { p.id })
         },

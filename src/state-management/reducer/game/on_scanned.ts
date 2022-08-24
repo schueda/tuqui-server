@@ -8,6 +8,8 @@ import { GameTask } from '../../../types/task';
 export type ScannedMessage = UserIdMessage & { payload: { scanResult: string } };
 export type ErrorMessage = SendableMessage & { payload: { imageId: string, text: string }}
 
+export const internalStartMeetingActionType = 'startMeeting';
+
 export const onScanned = (state: GameState, message: ScannedMessage): GameReducerReturn => {
     var originPlayer = state.players.find(p => p.id === message.payload.userId);
     if (!originPlayer) {

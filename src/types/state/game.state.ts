@@ -16,6 +16,7 @@ export type Player = {
 
     attendedToMeeting: boolean;
     votedPlayer?: string;
+    votes: string[];
 }
 
 export class GameState {
@@ -25,6 +26,7 @@ export class GameState {
 
     meetingCalled: boolean;
     meetingHappening: boolean;
+    skipVotes: string[];
 
     constructor(players: Player[]) {
         this.players = players;

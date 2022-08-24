@@ -25,9 +25,12 @@ export const buildApp = (() => {
 
     const gameSvc = new GameService(gameDb, connectionSvc);
     di.gameSvc = gameSvc;
-
+    
     const matchmakingSvc = new MatchmakingService(matchmakingDb, connectionSvc, gameSvc);
     di.matchmakingSvc = matchmakingSvc;
+
+    const meetingSvc = new MeetingService(gameDb, connectionSvc);
+    di.meetingSvc = meetingSvc;
 
     // App
     const app = new App(connectionSvc);
