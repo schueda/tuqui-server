@@ -7,7 +7,7 @@ import { buildApp } from '../src/di';
 import { logger } from '../src/logger';
 import { App } from "../src/app";
 
-process.env.DEBUG = "*"
+// process.env.DEBUG = "*"
 
 describe("tuqui-test", () => {
     let app: App;
@@ -18,9 +18,8 @@ describe("tuqui-test", () => {
         logger.info(`[TEST] beforeAll started`);
 
         app = buildApp();
-        app.server.listen(() => {
+        app.server.listen(app.PORT, () => {
             clientSocket = Client(`http://localhost:${app.PORT}`, {
-                transports: ["websocket", "polling"], // use WebSocket first, if available
                 query: {
                     userId: '1'
                 }
