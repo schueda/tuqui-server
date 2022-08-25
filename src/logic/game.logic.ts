@@ -1,11 +1,20 @@
 import { MatchmakingState, MatchmakingUser } from '../types/state/matchmaking.state';
 import { GameDatabase } from '../data/game.db';
 import { GameState, Player } from '../types/state/game.state';
-import { defaultGameRules } from '../types/game_rules';
+import { defaultGameRules, GameRules } from '../types/game_rules';
+import { ConnectionService } from './connection.logic';
+import { logger } from '../logger';
+import { defaultTags } from '../types/tags';
+import { SendableMessage, UserIdMessage } from '../types/message';
+import { SchedulableAction } from '../types/action';
+import { ScannedMessage, onScanned } from '../state-management/reducer/game/on_scanned';
 
 export class GameService {
 
-    constructor(private db: GameDatabase) { }
+    constructor(private db: GameDatabase, private connSvc: ConnectionService) {
+        this.registerScannedMessage();
+        this.registerDeliverIngredient();
+    }
 
     state: GameState;
 
@@ -21,7 +30,7 @@ export class GameService {
             ingredients: 0,
             poisons: 0,
 
-            attendedMeeting: false,
+            attendedToMeeting: false,
         });
 
         // Generate an array from 0 to player len
@@ -34,11 +43,41 @@ export class GameService {
         }
 
         this.state = <GameState>{
+            players,
+            tasksDone: 0,
+            totalTasks: gameRules.tasksPerWizard * players.filter(p => p.role === "wizard").length,
 
+            meetingCalled: false,
+            meetingHappening: false
         }
-        // TODO: Create the Game based on the MMState
-        // const game = new GameSta(matchmakingState);
 
-        // TODO: Save the created game in the DB
+        this.db.updateGame(this.state);
+    }
+
+    registerScannedMessage() {
+        this.connSvc.registerMessageReceiver("scanned", (message: ScannedMessage) => {
+            logger.debug(`[GameService.registerScannedMessage] Received scanned message ${JSON.stringify(message)}`);
+
+            const [newState, messages, actions] = onScanned(this.state, message);            
+
+
+            this.db.updateGame(newState);
+
+            messages.forEach(m => this.connSvc.emit(m));
+
+            this.processActions(actions);
+        });
+    }
+
+    registerDeliverIngredient() {
+        this.connSvc.registerMessageReceiver("deliverIngredient", (message: UserIdMessage) => {
+            logger.debug(`[GameService.registerDeliverIngredient] Received deliver ingredient message ${JSON.stringify(message)}`);
+            // const [newState, messages, actions] 
+        });
+    }
+
+    processActions(actions: SchedulableAction[]) {
+        actions.forEach(a => {
+        });
     }
 }
