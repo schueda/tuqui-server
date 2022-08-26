@@ -10,7 +10,7 @@ export class StateLoggingService {
         });
     }
 
-    private logs: StateLogEntry[];
+    private logs: StateLogEntry[] = [] ;
     private dateSuffix = new Date().toISOString().replace(/[-:T]/g, '');
 
     log(entry: StateLogEntry, timestamp?: number) {
