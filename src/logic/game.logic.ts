@@ -8,10 +8,11 @@ import { defaultTags } from '../types/tags';
 import { SendableMessage, UserIdMessage } from '../types/message';
 import { SchedulableAction } from '../types/action';
 import { ScannedMessage, onScanned } from '../state-management/reducer/game/on_scanned';
+import { StateLoggingService } from './state-logging.logic';
 
 export class GameService {
 
-    constructor(private db: GameDatabase, private connSvc: ConnectionService) {
+    constructor(private db: GameDatabase, private connSvc: ConnectionService, private stateLoggingSvc: StateLoggingService) {
         this.registerScannedMessage();
         this.registerDeliverIngredient();
     }
@@ -19,6 +20,8 @@ export class GameService {
     state: GameState;
 
     createGame(users: MatchmakingUser[]) {
+        this.stateLoggingSvc.clear();
+
         const gameRules = defaultGameRules;
 
         var players = <Player[]>users.map(u => <Player>{
@@ -51,6 +54,15 @@ export class GameService {
             meetingHappening: false
         }
 
+        this.stateLoggingSvc.log({
+            message: {
+                type: "gameCreated"
+            },
+            newState: {
+                ...this.state
+            }
+        })
+
         this.db.updateGame(this.state);
     }
 
@@ -58,8 +70,16 @@ export class GameService {
         this.connSvc.registerMessageReceiver("scanned", (message: ScannedMessage) => {
             logger.debug(`[GameService.registerScannedMessage] Received scanned message ${JSON.stringify(message)}`);
 
-            const [newState, messages, actions] = onScanned(this.state, message);            
+            const [newState, messages, actions] = onScanned(this.state, message);
 
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...this.state
+                }
+            })
 
             this.db.updateGame(newState);
 

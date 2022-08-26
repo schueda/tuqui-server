@@ -9,9 +9,10 @@ import { onUserDisconnected } from '../state-management/reducer/matchmaking/on_u
 import { onSendNickname, SendNicknameMessage } from '../state-management/reducer/matchmaking/on_send_nickname';
 import { SchedulableAction } from '../types/action';
 import { GameService } from './game.logic';
+import { StateLoggingService } from './state-logging.logic';
 
 export class MatchmakingService {
-    constructor(private db: MatchmakingDatabase, private connSvc: ConnectionService, private gameSvc: GameService) {
+    constructor(private db: MatchmakingDatabase, private connSvc: ConnectionService, private gameSvc: GameService, private stateLoggingSvc: StateLoggingService) {
         this.registerUserConnect();
         this.registerSendNickname();
         this.registerUserConfirmedReady();
@@ -28,6 +29,15 @@ export class MatchmakingService {
 
             const [newState, messages, actions] = onUserConnected(this.state, message);
             this.state = newState;
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...this.state
+                }
+            })
 
             messages.forEach(m => this.connSvc.emit(m));
         });
@@ -53,6 +63,15 @@ export class MatchmakingService {
             const [newState, messages, actions] = onConfirmedReady(this.state, message);
             this.state = newState;
 
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...this.state
+                }
+            })
+
             messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
         });
@@ -64,6 +83,15 @@ export class MatchmakingService {
 
             const [newState, messages, actions] = onUserDisconnected(this.state, message);
             this.state = newState;
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...this.state
+                }
+            })
 
             messages.forEach(m => this.connSvc.emit(m));
         });

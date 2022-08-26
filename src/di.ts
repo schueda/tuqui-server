@@ -5,10 +5,18 @@ import { MatchmakingService } from './logic/matchmaking.logic';
 import { MatchmakingDatabase } from './data/matchmaking.db';
 import { GameService } from './logic/game.logic';
 import { GameDatabase } from './data/game.db';
+import { StateLoggingService } from './logic/state-logging.logic';
+import { EventBusService } from './logic/event-bus.logic';
+import { DI } from './types/di';
 
-const di: Record<string, unknown> = {};
+export const di: DI = {};
 
 export const buildApp = (() => {
+
+    // EventBus
+    const eventBusSvc = new EventBusService();
+    di.eventBusSvc = eventBusSvc;
+
     // DB
     const connectionDb = new ConnectionDatabase();
     di.connectionDb = connectionDb;
@@ -20,13 +28,20 @@ export const buildApp = (() => {
     di.gameDb = gameDb;
 
     // Logic
+
     const connectionSvc = new ConnectionService(connectionDb);
     di.connectionSvc = connectionSvc;
 
-    const gameSvc = new GameService(gameDb, connectionSvc);
+    const gameStateLoggingSvc = new StateLoggingService('game', eventBusSvc);
+    di.gameStateLoggingSvc = gameStateLoggingSvc;
+
+    const gameSvc = new GameService(gameDb, connectionSvc, gameStateLoggingSvc);
     di.gameSvc = gameSvc;
 
-    const matchmakingSvc = new MatchmakingService(matchmakingDb, connectionSvc, gameSvc);
+    const matchmakingStateLoggingSvc = new StateLoggingService('matchmaking', eventBusSvc);
+    di.matchmakingStateLoggingSvc = matchmakingStateLoggingSvc;
+
+    const matchmakingSvc = new MatchmakingService(matchmakingDb, connectionSvc, gameSvc, matchmakingStateLoggingSvc);
     di.matchmakingSvc = matchmakingSvc;
 
     // App
