@@ -1,1 +1,0 @@
-[{"message":{"type":"connection","payload":{"userId":"4"},"timestamp":1661516312461},"newState":{"users":[{"id":"4","ready":false}]}},{"message":{"type":"userConfirmedReady","payload":{"userId":"3"},"timestamp":1661516325608},"newState":{"users":[{"id":"4","ready":false}]}}]
