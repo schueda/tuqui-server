@@ -7,6 +7,7 @@ import { StateLoggingService } from '../logic/state-logging.logic';
 import { GameService } from '../logic/game.logic';
 import { MatchmakingService } from '../logic/matchmaking.logic';
 import { App } from '../app';
+import { MeetingService } from '../logic/meeting.logic';
 export type DI = {
     eventBusSvc?: EventBusService;
     connectionDb?: ConnectionDatabase;
@@ -17,5 +18,6 @@ export type DI = {
     gameSvc?: GameService;
     matchmakingStateLoggingSvc?: StateLoggingService;
     matchmakingSvc?: MatchmakingService;
+    meetingSvc?: MeetingService;
     app?: App;
 }

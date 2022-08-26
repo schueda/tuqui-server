@@ -14,9 +14,10 @@ import { StateLoggingService } from './state-logging.logic';
 export class MatchmakingService {
     constructor(private db: MatchmakingDatabase, private connSvc: ConnectionService, private gameSvc: GameService, private stateLoggingSvc: StateLoggingService) {
         this.registerUserConnect();
+        this.registerUserDisconnected();
+
         this.registerSendNickname();
         this.registerUserConfirmedReady();
-        this.registerUserDisconnected();
     }
 
     state = <MatchmakingState>{
@@ -50,7 +51,6 @@ export class MatchmakingService {
             const [newState, messages, actions] = onSendNickname(this.state, message);
             this.state = newState;
 
-            logger.debug(`[MatchmakingService.registerSendNickname] New state: ${JSON.stringify(this.state)}, messages: ${JSON.stringify(messages)}`);
 
             messages.forEach(m => this.connSvc.emit(m));
         });
