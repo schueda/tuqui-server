@@ -8,7 +8,7 @@ export class App {
     public app: express.Application;
     public server: Server;
     public io: socketIo.Server;
-    public PORT: number = 8110;
+    public PORT: number = 8100;
 
     constructor(
         private connectionSvc: ConnectionService
