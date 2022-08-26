@@ -4,12 +4,11 @@ import { GameState, Player } from '../types/state/game.state';
 import { defaultGameRules } from '../types/game_rules';
 import { ConnectionService } from './connection.logic';
 import { logger } from '../logger';
-import { UserIdMessage } from '../types/message';
+import { UserIdMessage, SendableMessage } from '../types/message';
 import { SchedulableAction } from '../types/action';
 import { StateLoggingService } from './state-logging.logic';
 import { ScannedMessage, onScanned, internalStartMeetingActionType } from '../state-management/reducer/game/on_scanned';
 import { onDeliverIngredients } from '../state-management/reducer/game/on_deliver_ingredients';
-import { onCallMeeting } from '../state-management/reducer/game/on_call_meeting';
 import { MeetingService } from './meeting.logic';
 
 export class GameService {
@@ -17,7 +16,6 @@ export class GameService {
     constructor(private db: GameDatabase, private connSvc: ConnectionService, private meetingSvc: MeetingService, private stateLoggingSvc: StateLoggingService) {
         this.registerScannedMessage();
         this.registerDeliverIngredients();
-        this.registerCallMeeting();
     }
 
     createGame(users: MatchmakingUser[]) {
@@ -33,6 +31,7 @@ export class GameService {
             diedRecently: false,
             ingredients: 0,
             poisons: 0,
+            currentTasks: [],
 
             attendedToMeeting: false,
         });
@@ -44,16 +43,15 @@ export class GameService {
         // For each robot in game rules
         for (var i = 0; i < gameRules.numberOfRobots; i++) {
             players[playerIds[i]].role = "robot";
-        }
+        };
 
         const state = <GameState>{
             players,
             tasksDone: 0,
             totalTasks: gameRules.tasksPerWizard * players.filter(p => p.role === "wizard").length,
 
-            meetingCalled: false,
-            meetingHappening: false
-        }
+            mode: "gameRunning"
+        };
 
         this.stateLoggingSvc.log({
             message: {
@@ -62,9 +60,23 @@ export class GameService {
             newState: {
                 ...state
             }
+        });
+
+        const messages: SendableMessage[] = [];
+        state.players.forEach(player => {
+            messages.push({
+                type: "gameStarted",
+                payload: {
+                    role: player.role,
+                    tasks: player.currentTasks,
+                    robots: state.players.filter(p => p.role === "robot" && p.id !== player.id)
+                },
+                receivers: player.id
+            });
         })
 
         this.db.updateGame(state);
+        messages.forEach(m => this.connSvc.emit(m));
     }
 
     registerScannedMessage() {
@@ -100,23 +112,8 @@ export class GameService {
         });
     }
 
-    registerCallMeeting() {
-        this.connSvc.registerMessageReceiver("callMeeting", (message: UserIdMessage) => {
-            logger.debug(`[GameService.registerCallMeeting] Received call meeting message ${JSON.stringify(message)}`);
-
-            const [newState, messages, actions] = onCallMeeting(this.db.getGame(), message);
-
-            this.db.updateGame(newState);
-            messages.forEach(m => this.connSvc.emit(m));
-            this.processActions(actions);
-        });
-    }
-
     processActions(actions: SchedulableAction[]) {
         actions.forEach(a => {
-            if (a.message.type === internalStartMeetingActionType) {
-                this.meetingSvc.startMeeting();
-            }
         });
     }
 }

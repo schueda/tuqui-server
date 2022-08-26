@@ -1,4 +1,4 @@
-import { GameState, GameReducerReturn } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player } from '../../../types/state/game.state';
 import { VoteMessage } from '../../../logic/meeting.logic';
 import { SendableMessage } from '../../../types/message';
 
@@ -23,7 +23,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
             if (p.id === message.payload.votedId) {
                 return {
                     ...p,
-                    votes: p.votes.push(player.id)
+                    receivedVotes: p.receivedVotes.push(player.id)
                 };
             };
         })
@@ -34,24 +34,99 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
     };
 
     if (newState.players.filter(p => p.votedPlayer).length === newState.getAlivePlayers().length) {
-        messages.push(<SendableMessage>{
-            type: 'meetingFinished',
-            payload: {
-            },
-            receivers: "all"
-        });
+        const maxVotes = newState.players.reduce((max, p) => p.receivedVotes.length > max ? p.receivedVotes.length : max, 0);
+        
+        if (newState.skipVotes.length >= maxVotes) {
+            messages.push(buildSkipMeetingMessage(newState));
+        } else {
+            const playersWithMaxVotes = newState.players.filter(p => p.receivedVotes.length === maxVotes);
+            
+            if (playersWithMaxVotes.length === 1) {
+                newState.players = newState.players.map(p => {
+                    if (p.id === playersWithMaxVotes[0].id) {
+                        p.isAlive = false;
+                    }
+                    return p;
+                });
 
-        newState.meetingHappening = false;
-        newState.players = newState.players.map(p => {return p.votedPlayer = null});
+                messages.push(buildPlayerKickedMessage(newState, playersWithMaxVotes[0]));
+
+                if (newState.getAlivePlayers().filter(p => p.role === "robot").length === 0) {
+                    messages.push(buildWizardsWonMessage(newState));
+                }
+                if (newState.getAlivePlayers().filter(p => p.role === "wizard").length === 0) {
+                    messages.push(buildRobotsWonMessage(newState));
+                }
+
+
+                newState.mode = "gameRunning";
+                newState.players = newState.players.map(p => { 
+                    p.votedPlayer = null 
+                    p.receivedVotes = [];
+                    p.attendedToMeeting = false;
+
+                    return p;
+                });
+            } else {
+                messages.push(buildSkipMeetingMessage(newState));
+            }
+        }
     } else {
-        messages.push(<SendableMessage>{
-            type: 'updateMeeting',
-            payload: {
-                alreadyVotedPlayers: newState.players.filter(p => p.votedPlayer).map(p => p.id),
-            },
-            receivers: "all"
-        });
+        messages.push(buildUpdateVotingMessage(newState));
     };
 
-    return [newState, [], []];
+    return [newState, messages, []];
+}
+
+const buildSkipMeetingMessage = (state: GameState): SendableMessage => {
+    return <SendableMessage>{
+        type: 'skipMeeting',
+        payload: {
+            players: state.players,
+        },
+        receivers: "all"
+    };
+}
+
+const buildPlayerKickedMessage = (state: GameState, kickedPlayer: Player): SendableMessage => {
+    return <SendableMessage>{
+        type: 'playerKicked',
+        payload: {
+            players: state.players,
+            kickedPlayer: kickedPlayer
+        },
+        receivers: "all"
+    };
+}
+
+const buildUpdateVotingMessage = (state: GameState): SendableMessage => {
+    return <SendableMessage>{
+        type: 'updateVoting',
+        payload: {
+            alreadyVotedPlayers: state.players.filter(p => p.votedPlayer),
+        },
+        receivers: "all"
+    }
+}
+
+const buildWizardsWonMessage = (state: GameState): SendableMessage => {
+    return <SendableMessage>{
+        type: 'wizardsWon',
+        payload: {
+            robotsId: state.players.filter(p => p.role === "robot").map(p => p.id),
+            wizardsId: state.players.filter(p => p.role === "wizard").map(p => p.id)
+        },
+        receivers: "all"
+    };
+}
+
+const buildRobotsWonMessage = (state: GameState): SendableMessage => {
+    return <SendableMessage>{
+        type: 'robotsWon',
+        payload: {
+            robotsId: state.players.filter(p => p.role === "robot").map(p => p.id),
+            wizardsId: state.players.filter(p => p.role === "wizard").map(p => p.id)
+        },
+        receivers: "all"
+    };
 }

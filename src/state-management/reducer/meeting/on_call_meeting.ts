@@ -9,7 +9,7 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
 
     const newState = <GameState>{
         ...state,
-        meetingCalled: true,
+        mode: "meetingCalled",
         players: state.players.map(p => {
             if (p.id === player.id) {
                 p.attendedToMeeting = true;

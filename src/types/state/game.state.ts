@@ -16,7 +16,7 @@ export type Player = {
 
     attendedToMeeting: boolean;
     votedPlayer?: string;
-    votes: string[];
+    receivedVotes: string[];
 }
 
 export class GameState {
@@ -24,16 +24,14 @@ export class GameState {
     tasksDone: number;
     totalTasks: number;
 
-    meetingCalled: boolean;
-    meetingHappening: boolean;
+    mode: "gameRunning" | "meetingCalled" | "meetingHappening" 
     skipVotes: string[];
 
     constructor(players: Player[]) {
         this.players = players;
         this.tasksDone = 0;
         this.totalTasks = 0;
-        this.meetingCalled = false;
-        this.meetingHappening = false;
+        this.mode = "gameRunning";
     }
 
     getWizards(): Player[] {

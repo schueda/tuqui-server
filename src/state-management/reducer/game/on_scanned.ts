@@ -17,7 +17,7 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
     }
 
     if (originPlayer.isAlive) {
-        if (!state.meetingCalled) {
+        if (state.mode === "gameRunning") {
             if (defaultTags.playerTags.includes(message.payload.scanResult)) {
                 var targetPlayer = state.players.find(p => p.id === message.payload.scanResult);
                 
@@ -105,14 +105,9 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
             };
             return [state, [buildInvalidTagMessage(originPlayer)], []];
         };
-        if (defaultTags.campfireTag == message.payload.scanResult) {
-            return [changingPlayerAttendedToMeeting(state, originPlayer),
-/*----------------*/[buildAttendedToMeetingMessage(state, originPlayer)], //TA ERRADO-----------------------------------------------------------------
-                    []];
-        };
-        return [state, [buildGoToCampfireMessage(originPlayer)], []];
+    } else {
+        return [state, [buildYoureDeadMessage(originPlayer)], []];
     };
-    return [state, [buildYoureDeadMessage(originPlayer)], []];
 }
 
 const buildFinishTaskMessage = (player: Player): ErrorMessage => {
@@ -340,34 +335,6 @@ const buildInvalidTagMessage = (player: Player): ErrorMessage => {
         payload: {
             imageId: "invalidTag",
             text: "Essa tag NFC não é válida."
-        },
-        receivers: player.id
-    }
-}
-
-const changingPlayerAttendedToMeeting = (state: GameState, player: Player): GameState => {
-    //TODO: ATUALIZAR O ESTADO
-    return <GameState>{
-        ...state,
-    };
-}
-
-const buildAttendedToMeetingMessage = (state: GameState, player: Player): SendableMessage => {
-    return <SendableMessage>{
-        type: "attendedToMeeting",
-        payload: {
-            onMeetingPlayers: state.getOnMeetingPlayers()
-        },
-        receivers: player.id
-    }
-}
-
-const buildGoToCampfireMessage = (player: Player): ErrorMessage => {
-    return <ErrorMessage>{
-        type: "error",
-        payload: {
-            imageId: "goToCampfire",
-            text: "Vá para a campfire."
         },
         receivers: player.id
     }
