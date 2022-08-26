@@ -6,6 +6,7 @@ import { ConnectionService } from './connection.logic';
 import { logger } from '../logger';
 import { UserIdMessage } from '../types/message';
 import { SchedulableAction } from '../types/action';
+import { StateLoggingService } from './state-logging.logic';
 import { ScannedMessage, onScanned, internalStartMeetingActionType } from '../state-management/reducer/game/on_scanned';
 import { onDeliverIngredients } from '../state-management/reducer/game/on_deliver_ingredients';
 import { onCallMeeting } from '../state-management/reducer/game/on_call_meeting';
@@ -13,13 +14,15 @@ import { MeetingService } from './meeting.logic';
 
 export class GameService {
 
-    constructor(private db: GameDatabase, private connSvc: ConnectionService, private meetingSvc: MeetingService) {
+    constructor(private db: GameDatabase, private connSvc: ConnectionService, private meetingSvc: MeetingService, private stateLoggingSvc: StateLoggingService) {
         this.registerScannedMessage();
         this.registerDeliverIngredients();
         this.registerCallMeeting();
     }
 
     createGame(users: MatchmakingUser[]) {
+        this.stateLoggingSvc.clear();
+
         const gameRules = defaultGameRules;
 
         var players = <Player[]>users.map(u => <Player>{
@@ -52,6 +55,15 @@ export class GameService {
             meetingHappening: false
         }
 
+        this.stateLoggingSvc.log({
+            message: {
+                type: "gameCreated"
+            },
+            newState: {
+                ...state
+            }
+        })
+
         this.db.updateGame(state);
     }
 
@@ -59,7 +71,16 @@ export class GameService {
         this.connSvc.registerMessageReceiver("scanned", (message: ScannedMessage) => {
             logger.debug(`[GameService.registerScannedMessage] Received scanned message ${JSON.stringify(message)}`);
 
-            const [newState, messages, actions] = onScanned(this.db.getGame(), message);            
+            const [newState, messages, actions] = onScanned(this.db.getGame(), message);
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...newState
+                }
+            })
 
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
@@ -93,7 +114,7 @@ export class GameService {
 
     processActions(actions: SchedulableAction[]) {
         actions.forEach(a => {
-            if(a.message.type === internalStartMeetingActionType) {
+            if (a.message.type === internalStartMeetingActionType) {
                 this.meetingSvc.startMeeting();
             }
         });

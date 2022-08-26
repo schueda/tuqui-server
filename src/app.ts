@@ -41,5 +41,4 @@ export class App {
             this.connectionSvc.connect(socket);
         });
     }
-
 }
