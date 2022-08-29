@@ -1,8 +1,9 @@
-import { MatchmakingState, MatchmakingReducerReturn } from '../../../types/state/matchmaking.state';
-import { UserIdMessage, SendableMessage } from '../../../types/message';
-import { SchedulableAction } from '../../../types/action';
+import { MatchmakingState, MatchmakingReducerReturn, MatchmakingUser } from '../../../types/state/matchmaking.state';
+import { UserIdMessage, SendableMessage, Message } from '../../../types/message';
+import { NewSchedulableAction } from '../../../types/action';
 
 export const internalGameCreateActionType = 'internalGameCreate';
+export type GameCreateMessage = Message & { payload: {users: MatchmakingUser[]} }
 
 export const onConfirmedReady = (state: MatchmakingState, message: UserIdMessage): MatchmakingReducerReturn => {
     const user = state.users.find(u => u.id === message.payload.userId);
@@ -27,8 +28,8 @@ export const onConfirmedReady = (state: MatchmakingState, message: UserIdMessage
     const readyCount = newState.users.filter(u => u.ready).length;
     //TODO: Move to a envfile or gameRules
     if (readyCount === newState.users.length && newState.users.length >= 4) {
-        const internalGameCreateAction = <SchedulableAction>{
-            message: {
+        const internalGameCreateAction = <NewSchedulableAction>{
+            message: <GameCreateMessage>{
                 type: internalGameCreateActionType,
                 payload: {
                     users: newState.users

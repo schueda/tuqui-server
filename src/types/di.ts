@@ -8,16 +8,25 @@ import { GameService } from '../logic/game.logic';
 import { MatchmakingService } from '../logic/matchmaking.logic';
 import { App } from '../app';
 import { MeetingService } from '../logic/meeting.logic';
+import { SchedulingDatabase } from '../data/scheduling.db';
+import { SchedulingService } from '../logic/scheduling.logic';
+
 export type DI = {
     eventBusSvc?: EventBusService;
+
     connectionDb?: ConnectionDatabase;
+    schedulingDb?: SchedulingDatabase;
     matchmakingDb?: MatchmakingDatabase;
     gameDb?: GameDatabase;
-    connectionSvc?: ConnectionService;
-    gameStateLoggingSvc?: StateLoggingService;
-    gameSvc?: GameService;
+
     matchmakingStateLoggingSvc?: StateLoggingService;
+    gameStateLoggingSvc?: StateLoggingService;
+
+    connectionSvc?: ConnectionService;
+    schedulingSvc?: SchedulingService;
     matchmakingSvc?: MatchmakingService;
+    gameSvc?: GameService;
     meetingSvc?: MeetingService;
+
     app?: App;
 }

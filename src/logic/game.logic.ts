@@ -7,77 +7,42 @@ import { logger } from '../logger';
 import { UserIdMessage, SendableMessage } from '../types/message';
 import { SchedulableAction } from '../types/action';
 import { StateLoggingService } from './state-logging.logic';
-import { ScannedMessage, onScanned, internalStartMeetingActionType } from '../state-management/reducer/game/on_scanned';
+import { ScannedMessage, onScanned } from '../state-management/reducer/game/on_scanned';
 import { onDeliverIngredients } from '../state-management/reducer/game/on_deliver_ingredients';
-import { MeetingService } from './meeting.logic';
+import { SchedulingService } from './scheduling.logic';
+import { internalGameCreateActionType, GameCreateMessage } from '../state-management/reducer/matchmaking/on_confirmed_ready';
+import { onGameCreate } from '../state-management/reducer/game/on_game_create';
 
 export class GameService {
 
-    constructor(private db: GameDatabase, private connSvc: ConnectionService, private meetingSvc: MeetingService, private stateLoggingSvc: StateLoggingService) {
+    constructor(private db: GameDatabase, private connSvc: ConnectionService, private scheSvc: SchedulingService, private stateLoggingSvc: StateLoggingService) {
+        this.registerCreateGame();
         this.registerScannedMessage();
         this.registerDeliverIngredients();
     }
 
-    createGame(users: MatchmakingUser[]) {
-        this.stateLoggingSvc.clear();
+    registerCreateGame() {
+        this.connSvc.registerMessageReceiver(internalGameCreateActionType, (message: GameCreateMessage) => {
+            logger.debug(`[GameService.registerCreateGame] Received create game message ${JSON.stringify(message)}`);
+            this.stateLoggingSvc.clear();
 
-        const gameRules = defaultGameRules;
+            const [newState, messages, actions] = onGameCreate(this.db.getGame(), message);
 
-        var players = <Player[]>users.map(u => <Player>{
-            id: u.id,
-            nickname: u.nickname,
-            role: "wizard",
-            isAlive: true,
-            diedRecently: false,
-            ingredients: 0,
-            poisons: 0,
-            currentTasks: [],
-
-            attendedToMeeting: false,
-        });
-
-        // Generate an array from 0 to player len
-        var playerIds = Array.from(Array(players.length).keys());
-        playerIds.sort(() => Math.random() - 0.5);
-
-        // For each robot in game rules
-        for (var i = 0; i < gameRules.numberOfRobots; i++) {
-            players[playerIds[i]].role = "robot";
-        };
-
-        const state = <GameState>{
-            players,
-            tasksDone: 0,
-            totalTasks: gameRules.tasksPerWizard * players.filter(p => p.role === "wizard").length,
-
-            mode: "gameRunning"
-        };
-
-        this.stateLoggingSvc.log({
-            message: {
-                type: "gameCreated"
-            },
-            newState: {
-                ...state
-            }
-        });
-
-        const messages: SendableMessage[] = [];
-        state.players.forEach(player => {
-            messages.push({
-                type: "gameStarted",
-                payload: {
-                    role: player.role,
-                    tasks: player.currentTasks,
-                    robots: state.players.filter(p => p.role === "robot" && p.id !== player.id)
+            this.stateLoggingSvc.log({
+                message: {
+                    type: "gameCreated"
                 },
-                receivers: player.id
+                newState: {
+                    ...newState
+                }
             });
-        })
 
-        this.db.updateGame(state);
-        messages.forEach(m => this.connSvc.emit(m));
+            this.db.updateGame(newState);
+            messages.forEach(m => this.connSvc.emit(m));
+            this.processActions(actions);
+        });
     }
+
 
     registerScannedMessage() {
         this.connSvc.registerMessageReceiver("scanned", (message: ScannedMessage) => {
@@ -114,6 +79,7 @@ export class GameService {
 
     processActions(actions: SchedulableAction[]) {
         actions.forEach(a => {
+            this.scheSvc.addSchedulableAction(a);
         });
     }
 }

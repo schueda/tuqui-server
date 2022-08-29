@@ -1,6 +1,6 @@
-import { SchedulableAction } from '../../../types/action';
+import { NewSchedulableAction } from '../../../types/action';
 import { GameState, GameReducerReturn, Player } from '../../../types/state/game.state';
-import { UserIdMessage, SendableMessage } from '../../../types/message';
+import { UserIdMessage, SendableMessage, Message } from '../../../types/message';
 import { defaultTags } from '../../../types/tags';
 import { defaultGameRules, GameRules } from '../../../types/game_rules';
 import { GameTask } from '../../../types/task';
@@ -29,11 +29,7 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
                         if (targetPlayer.role === "wizard") {
                             if (originPlayer.poisons > 0) {
                                 if (targetPlayer.poisonTime === undefined) {
-                                    return [
-                                        changingPlayerPoisonTime(state, targetPlayer), 
-/*------------------------------------*/[buildPoisonedPlayerMessage(originPlayer, targetPlayer)], //TA ERRADO---------------------------------------
-                                        [buildPoisonedPlayerAction(originPlayer, targetPlayer, defaultGameRules)]
-                                    ];
+                                    onPlayerPoisoned(state, originPlayer, targetPlayer);
                                 };
                                 return [state, [buildAlreadyPoisonedMessage(originPlayer, targetPlayer)], []];
                             };
@@ -121,25 +117,57 @@ const buildFinishTaskMessage = (player: Player): ErrorMessage => {
     };
 }
 
-const changingPlayerPoisonTime = (state: GameState, player: Player): GameState => {
-    //TODO: ATUALIZAR O ESTADO
-    return <GameState>{
-        ...state,
-    };
-}
+export const internalPlayerPoisonedActionType = 'playerPoisoned';
 
-const buildPoisonedPlayerMessage = (originPlayer: Player, targetPlayer: Player): SendableMessage => {
-    return <SendableMessage>{
+const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: Player): GameReducerReturn => {
+    state = <GameState>{
+        ...state,
+        players: state.players.map(p => {
+            if (p.id === originPlayer.id) {
+                return {
+                    ...p,
+                    poisons: p.poisons - 1
+                };
+            }
+
+            if (p.id === targetPlayer.id) {
+                return {
+                    ...p,
+                    poisonTime: Date.now()
+                };
+            }
+
+            return p;
+        })
+    }
+
+    var messages: SendableMessage[] = [];
+    messages.push(<SendableMessage>{
         type: "poisonedPlayer",
         payload: {
             nickname: targetPlayer.nickname
         },
         receivers: originPlayer.id
-    };
+    });
+
+    var actions: NewSchedulableAction[] = [];
+    actions.push(<NewSchedulableAction>{
+        type: internalPlayerPoisonedActionType,
+        message: <Message>{
+            type: internalPlayerPoisonedActionType,
+            payload: {
+                
+            },
+            
+        },
+        delay: defaultGameRules.timeToDie,
+    });
+
+    return [state, messages, []];
 }
 
-const buildPoisonedPlayerAction = (originPlayer: Player, targetPlayer: Player, gameRules: GameRules): SchedulableAction => {
-    return <SchedulableAction>{
+const buildPoisonedPlayerAction = (originPlayer: Player, targetPlayer: Player, gameRules: GameRules): NewSchedulableAction => {
+    return <NewSchedulableAction>{
         message: {
             type: "poisonedPlayer",
             payload: {

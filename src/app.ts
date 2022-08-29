@@ -3,12 +3,13 @@ import { createServer, Server } from 'http';
 import { logger } from "./logger";
 import * as socketIo from "socket.io";
 import { ConnectionService } from './logic/connection.logic';
+import { globalVariables } from './types/global_variables';
 
 export class App {
     public app: express.Application;
     public server: Server;
     public io: socketIo.Server;
-    public PORT: number = 8100;
+    public PORT: number = globalVariables.port;
 
     constructor(
         private connectionSvc: ConnectionService
@@ -35,6 +36,7 @@ export class App {
 
     private listen(): void {
         logger.debug(`[app.listen] listen started`);
+
         this.io.on('connection', (socket: socketIo.Socket) => {
             logger.info(`[app.listen] New connection!`)
 

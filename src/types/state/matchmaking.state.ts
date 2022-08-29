@@ -1,4 +1,4 @@
-import { SchedulableAction } from '../action';
+import { NewSchedulableAction } from '../action';
 import { SendableMessage } from '../message';
 
 export type MatchmakingUser = {
@@ -11,4 +11,4 @@ export type MatchmakingState = {
     users: MatchmakingUser[];
 }
 
-export type MatchmakingReducerReturn = [MatchmakingState, SendableMessage[], SchedulableAction[]];
+export type MatchmakingReducerReturn = [MatchmakingState, SendableMessage[], NewSchedulableAction[]];

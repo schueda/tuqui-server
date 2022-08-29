@@ -12,34 +12,50 @@ export class ConnectionService {
 
         // TODO: Do Joi validation
         const userId = <string>socket.handshake.query.userId;
+        const serviceId = <string>socket.handshake.query.serviceId;
 
-        this.db.updateConnection(userId, socket);
 
-        socket.on('disconnect', () => {
-            logger.debug(`[app.listen] User disconnected`)
+        if (userId) {
+            this.db.updateConnection(userId, socket);
 
-            this.disconnect(socket);
-        });
+            // Handle a user
+            socket.on('disconnect', () => {
+                logger.debug(`[app.listen] User disconnected`)
 
-        // Register the socket for all receivers
-        for (const receiver of this.db.getAllReceivers()) {
-            logger.debug(`[ConnectionService.connect] Registering message receiver for ${receiver.messageType}`);
-            socket.on(receiver.messageType, (message: Message) => {
-                logger.debug(`[ConnectionService.connect] Received message ${receiver.messageType}`);
-                receiver.callback(message);
+                this.disconnect(socket);
+            });
+
+            // Register the socket for all receivers
+            for (const receiver of this.db.getAllReceivers()) {
+                logger.debug(`[ConnectionService.connect] Registering message receiver for ${receiver.messageType}`);
+                socket.on(receiver.messageType, (message: Message) => {
+                    logger.debug(`[ConnectionService.connect] Received message ${receiver.messageType}`);
+                    receiver.callback(message);
+                });
+            }
+
+            // Call all connection receivers
+            for (const receiver of this.db.getAllConnectionReceivers()) {
+                receiver(<UserIdMessage>{
+                    type: 'connection',
+                    payload: {
+                        userId: userId,
+                    },
+                });
+            }
+        } else if (serviceId) {
+            this.db.updateConnection(serviceId, socket);
+
+            // Handle as a service
+            socket.on('disconnect', () => {
+                logger.debug(`[app.listen] Service disconnected`)
+
+                this.disconnect(socket);
+
+                // Fatal error
+                process.exit(10);
             });
         }
-
-        // Call all connection receivers
-        for (const receiver of this.db.getAllConnectionReceivers()) {
-            receiver(<UserIdMessage>{
-                type: 'connection',
-                payload: {
-                    userId: userId,
-                },
-            });
-        }
-
     }
 
     disconnect(socket: Socket) {

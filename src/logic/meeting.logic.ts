@@ -6,11 +6,12 @@ import { SchedulableAction } from '../types/action';
 import { onVote } from '../state-management/reducer/meeting/on_vote';
 import { onScanned, ScannedMessage } from '../state-management/reducer/meeting/on_scanned';
 import { onCallMeeting } from '../state-management/reducer/meeting/on_call_meeting';
+import { SchedulingService } from './scheduling.logic';
 
 export type VoteMessage = UserIdMessage & { payload: { votedId: string } }
 
 export class MeetingService {
-    constructor(private db: GameDatabase, private connSvc: ConnectionService) {
+    constructor(private db: GameDatabase, private connSvc: ConnectionService, private scheSvc: SchedulingService) {
         this.registerCallMeeting();
         this.registerOnScanned();
         this.registerVote();

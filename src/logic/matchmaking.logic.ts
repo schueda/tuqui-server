@@ -1,18 +1,18 @@
 import { MatchmakingDatabase } from '../data/matchmaking.db';
 import { ConnectionService } from './connection.logic';
-import { Message, UserIdMessage } from '../types/message';
+import { UserIdMessage } from '../types/message';
 import { logger } from '../logger';
-import { MatchmakingState, MatchmakingReducerReturn } from '../types/state/matchmaking.state';
+import { MatchmakingState } from '../types/state/matchmaking.state';
 import { onUserConnected } from '../state-management/reducer/matchmaking/on_user_connected';
-import { onConfirmedReady, internalGameCreateActionType } from '../state-management/reducer/matchmaking/on_confirmed_ready';
+import { onConfirmedReady } from '../state-management/reducer/matchmaking/on_confirmed_ready';
 import { onUserDisconnected } from '../state-management/reducer/matchmaking/on_user_disconnected';
 import { onSendNickname, SendNicknameMessage } from '../state-management/reducer/matchmaking/on_send_nickname';
-import { SchedulableAction } from '../types/action';
-import { GameService } from './game.logic';
+import { NewSchedulableAction } from '../types/action';
 import { StateLoggingService } from './state-logging.logic';
+import { SchedulingService } from './scheduling.logic';
 
 export class MatchmakingService {
-    constructor(private db: MatchmakingDatabase, private connSvc: ConnectionService, private gameSvc: GameService, private stateLoggingSvc: StateLoggingService) {
+    constructor(private db: MatchmakingDatabase, private connSvc: ConnectionService, private scheSvc: SchedulingService, private stateLoggingSvc: StateLoggingService) {
         this.registerUserConnect();
         this.registerUserDisconnected();
 
@@ -97,11 +97,9 @@ export class MatchmakingService {
         });
     }
 
-    processActions(actions: SchedulableAction[]) {
+    processActions(actions: NewSchedulableAction[]) {
         actions.forEach(a => {
-            if (a.message.type == internalGameCreateActionType) {
-                this.gameSvc.createGame(this.state.users);
-            }
+            this.scheSvc.addSchedulableAction(a);
         })
     }
 

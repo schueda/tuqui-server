@@ -9,6 +9,8 @@ import { StateLoggingService } from './logic/state-logging.logic';
 import { EventBusService } from './logic/event-bus.logic';
 import { DI } from './types/di';
 import { MeetingService } from './logic/meeting.logic';
+import { SchedulingDatabase } from './data/scheduling.db';
+import { SchedulingService } from './logic/scheduling.logic';
 
 export const di: DI = {};
 
@@ -17,6 +19,7 @@ export const buildApp = (() => {
     // EventBus
     const eventBusSvc = new EventBusService();
     di.eventBusSvc = eventBusSvc;
+
 
     // DB
     const connectionDb = new ConnectionDatabase();
@@ -28,25 +31,34 @@ export const buildApp = (() => {
     const gameDb = new GameDatabase();
     di.gameDb = gameDb;
 
-    // Logic
+    const schedulingDb = new SchedulingDatabase();
+    di.schedulingDb = schedulingDb;
 
-    const connectionSvc = new ConnectionService(connectionDb);
-    di.connectionSvc = connectionSvc;
+
+    // Logging
+    const matchmakingStateLoggingSvc = new StateLoggingService('matchmaking', eventBusSvc);
+    di.matchmakingStateLoggingSvc = matchmakingStateLoggingSvc;
 
     const gameStateLoggingSvc = new StateLoggingService('game', eventBusSvc);
     di.gameStateLoggingSvc = gameStateLoggingSvc;
 
-    const meetingSvc = new MeetingService(gameDb, connectionSvc);
-    di.meetingSvc = meetingSvc;
 
-    const gameSvc = new GameService(gameDb, connectionSvc, meetingSvc, gameStateLoggingSvc);
+    // Logic
+    const connectionSvc = new ConnectionService(connectionDb);
+    di.connectionSvc = connectionSvc;
+
+    const schedulingSvc = new SchedulingService(schedulingDb);
+    di.schedulingSvc = schedulingSvc;
+
+    const matchmakingSvc = new MatchmakingService(matchmakingDb, connectionSvc, schedulingSvc, matchmakingStateLoggingSvc);
+    di.matchmakingSvc = matchmakingSvc;
+
+    const gameSvc = new GameService(gameDb, connectionSvc, schedulingSvc, gameStateLoggingSvc);
     di.gameSvc = gameSvc;
 
-    const matchmakingStateLoggingSvc = new StateLoggingService('matchmaking', eventBusSvc);
-    di.matchmakingStateLoggingSvc = matchmakingStateLoggingSvc;
+    const meetingSvc = new MeetingService(gameDb, connectionSvc, schedulingSvc);
+    di.meetingSvc = meetingSvc;
 
-    const matchmakingSvc = new MatchmakingService(matchmakingDb, connectionSvc, gameSvc, matchmakingStateLoggingSvc);
-    di.matchmakingSvc = matchmakingSvc;
 
     // App
     const app = new App(connectionSvc);
