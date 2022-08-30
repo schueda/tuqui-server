@@ -13,7 +13,7 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage): Game
         role: "wizard",
         isAlive: true,
         diedRecently: false,
-        ingredients: 0,
+        ingredients: [],
         poisons: 0,
         currentTasks: [],
 

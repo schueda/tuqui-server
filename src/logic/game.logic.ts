@@ -7,11 +7,12 @@ import { logger } from '../logger';
 import { UserIdMessage, SendableMessage } from '../types/message';
 import { SchedulableAction } from '../types/action';
 import { StateLoggingService } from './state-logging.logic';
-import { ScannedMessage, onScanned } from '../state-management/reducer/game/on_scanned';
+import { ScannedMessage, onScanned, playerDiedMessageType, playerDiedMessage } from '../state-management/reducer/game/on_scanned';
 import { onDeliverIngredients } from '../state-management/reducer/game/on_deliver_ingredients';
 import { SchedulingService } from './scheduling.logic';
 import { internalGameCreateActionType, GameCreateMessage } from '../state-management/reducer/matchmaking/on_confirmed_ready';
 import { onGameCreate } from '../state-management/reducer/game/on_game_create';
+import { onPlayerDied } from '../state-management/reducer/game/on_player_died';
 
 export class GameService {
 
@@ -74,6 +75,19 @@ export class GameService {
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
+        });
+    }
+
+    registerKillPlayer() {
+        this.connSvc.registerMessageReceiver(playerDiedMessageType, (message: playerDiedMessage) => {
+            logger.debug(`[GameService.registerKillPlayer] Received kill player message ${JSON.stringify(message)}`);
+
+            const [newState, messafes, actions] = onPlayerDied(this.db.getGame(), message);
+
+            this.db.updateGame(newState);
+            messafes.forEach(m => this.connSvc.emit(m));
+            this.processActions(actions);
+
         });
     }
 

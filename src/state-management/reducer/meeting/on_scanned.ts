@@ -19,7 +19,7 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
     if (originPlayer.isAlive) {
         if (state.mode === "meetingCalled") {
             if (defaultTags.campfireTag == message.payload.scanResult) {
-                return changingPlayerAttendedToMeeting(state, originPlayer);
+                return onPlayerAttendedToMeeting(state, originPlayer);
             };
             return [state, [buildGoToCampfireMessage(originPlayer)], []];
         };
@@ -28,7 +28,7 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
     };
 }
 
-const changingPlayerAttendedToMeeting = (state: GameState, player: Player): GameReducerReturn => {
+const onPlayerAttendedToMeeting = (state: GameState, player: Player): GameReducerReturn => {
     var newState = <GameState>{
         ...state,
         players: state.players.map(p => {
@@ -85,7 +85,6 @@ const buildYoureDeadMessage = (player: Player): SendableMessage => {
 const buildStartMeetingMessage = (): SendableMessage => {
     return <SendableMessage>{
         type: "startMeeting",
-        payload: {},
         receivers: "all"
     }
 }

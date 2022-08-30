@@ -23,87 +23,69 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
                 
                 if (originPlayer.taskBeingDone) {
                     return [state, [buildFinishTaskMessage(originPlayer)], []];
-                };
+                }
                 if (targetPlayer.isAlive) {
                     if (originPlayer.role === "robot") {
                         if (targetPlayer.role === "wizard") {
                             if (originPlayer.poisons > 0) {
                                 if (targetPlayer.poisonTime === undefined) {
-                                    onPlayerPoisoned(state, originPlayer, targetPlayer);
-                                };
+                                    return onPlayerPoisoned(state, originPlayer, targetPlayer);
+                                }
                                 return [state, [buildAlreadyPoisonedMessage(originPlayer, targetPlayer)], []];
-                            };
+                            }
                             return [state, [buildOutOfPoisonMessage(originPlayer)], []];
-                        };
+                        }
                         return [state, [buildCantPoisonRobot(originPlayer, targetPlayer)], []];
-                    };
+                    }
                     const task = originPlayer.currentTasks.find(t => t.scanId === message.payload.scanResult);
                     if (task) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            if (originPlayer.ingredients < defaultGameRules.maxIngredients) {
-                                return [
-                                    changingPlayerGotIngredient(state, originPlayer),
-/*--------------------------------*/[buildReceivedIngredientMessage(originPlayer)], //TA ERRADO-----------------------------------------------------
-                                    []];
-                            };
+                            if (originPlayer.ingredients.length < defaultGameRules.maxIngredients) {
+                                return onPlayerGotIngredient(state, originPlayer, task);
+                            }
                             return [state, [buildUnloadBagMessage(originPlayer)], []];
-                        };
+                        }
                         if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
-                            return [
-                                changingAutoDeliveredIngredient(state, originPlayer),
-/*--------------------------------*/[buildAutoDeliveredIngredientMessage(originPlayer)], //TA ERRADO------------------------------------------------
-                                []
-                            ];
-                        };
-                    };
+                            return onAutoDeliveredIngredient(state, originPlayer, task);
+                        }
+                    }
                     return [state, [buildShouldntScanPlayerMessage(originPlayer, targetPlayer)], []];
-                };
+                }
                 if (targetPlayer.diedRecently) {
-                    return [changingBodyScanned(state, targetPlayer),
-/*------------------------*/[buildYouFoundBodyMessage(originPlayer, targetPlayer)].concat(buildBodyWasFoundMessage(state, originPlayer, targetPlayer)), 
-                            []];
-                };
+                    return onBodyScanned(state, originPlayer, targetPlayer);
+                }
                 return [state, [buildScannedGhostMessage(originPlayer, targetPlayer)], []];
-            };
+            }
             if (defaultTags.taskTags.includes(message.payload.scanResult)) {
                 const taskBeingDone = originPlayer.taskBeingDone;
                 if (taskBeingDone) {
                     if (taskBeingDone.scanId === message.payload.scanResult) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            return [changingPlayerGotIngredient(state, originPlayer),
-/*--------------------------------*/[buildReceivedIngredientMessage(originPlayer)],  //TA ERRADO------------------------------------------------------
-                                    []];
-                        };
+                            return onPlayerGotIngredient(state, originPlayer, taskBeingDone);
+                        }
                         if (originPlayer.role === "robot") {
-                            return [changingPlayerReceivedPoison(state, originPlayer),
-/*--------------------------------*/[buildReceivedPoisonMessage(originPlayer)],  //TA ERRADO----------------------------------------------------------
-                                    []
-                            ];
-                        };
-                        return [changingAutoDeliveredIngredient(state, originPlayer),
-/*----------------------------*/[buildAutoDeliveredIngredientMessage(originPlayer)], //TA ERRADO------------------------------------------------------
-                                []];
-                    };
+                            return onPlayerReceivedPoison(state, originPlayer);
+                        }
+                        return onAutoDeliveredIngredient(state, originPlayer, taskBeingDone);
+                    }
                     return [state, [buildFinishTaskMessage(originPlayer)], []];
-                };
+                }
                 const task = originPlayer.currentTasks.find(t => t.scanId === message.payload.scanResult);
                 if (task) {
-                    if (defaultGameRules.taskDeliveryMode === "autoDelivery" || originPlayer.ingredients < defaultGameRules.maxIngredients) {
-                        return [changingPlayerDoingTask(state, originPlayer),
-/*----------------------------*/[buildTaskMessage(originPlayer, task)], //TA ERRADO-------------------------------------------------------------------
-                                []];
-                    };
+                    if (defaultGameRules.taskDeliveryMode === "autoDelivery" || originPlayer.ingredients.length < defaultGameRules.maxIngredients) {
+                        return onPlayerDoingTask(state, originPlayer, task);
+                    }
                     return [state, [buildTaskNotInListMessage(originPlayer)], []];
-                };
-            };
+                }
+            }
             if (defaultTags.campfireTag == message.payload.scanResult) {
                 return [state, [buildOnTheCampfireMessage(originPlayer)], []];
-            };
+            }
             return [state, [buildInvalidTagMessage(originPlayer)], []];
-        };
+        }
     } else {
         return [state, [buildYoureDeadMessage(originPlayer)], []];
-    };
+    }
 }
 
 const buildFinishTaskMessage = (player: Player): ErrorMessage => {
@@ -114,10 +96,13 @@ const buildFinishTaskMessage = (player: Player): ErrorMessage => {
             text: "Termine a task!"
         },
         receivers: player.id
-    };
+    }
 }
 
 export const internalPlayerPoisonedActionType = 'playerPoisoned';
+
+export const playerDiedMessageType = 'playerDied';
+export type playerDiedMessage = SendableMessage & { payload: { player: Player } };
 
 const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: Player): GameReducerReturn => {
     state = <GameState>{
@@ -153,10 +138,10 @@ const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: 
     var actions: NewSchedulableAction[] = [];
     actions.push(<NewSchedulableAction>{
         type: internalPlayerPoisonedActionType,
-        message: <Message>{
-            type: internalPlayerPoisonedActionType,
+        message: <playerDiedMessage>{
+            type: playerDiedMessageType,
             payload: {
-                
+                player: targetPlayer
             },
             
         },
@@ -164,18 +149,6 @@ const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: 
     });
 
     return [state, messages, []];
-}
-
-const buildPoisonedPlayerAction = (originPlayer: Player, targetPlayer: Player, gameRules: GameRules): NewSchedulableAction => {
-    return <NewSchedulableAction>{
-        message: {
-            type: "poisonedPlayer",
-            payload: {
-                player: targetPlayer
-            }
-        },
-        delay: gameRules.timeToDie
-    };
 }
 
 const buildAlreadyPoisonedMessage = (originPlayer: Player, targetPlayer: Player): ErrorMessage => {
@@ -210,22 +183,38 @@ const buildCantPoisonRobot = (originPlayer: Player, targetPlayer: Player): Error
     };
 }
 
-const changingPlayerGotIngredient = (state: GameState, player: Player): GameState => {
-    //TODO: ATUALIZAR O ESTADO
-    return <GameState>{
-        ...state,
-    };
-}
+const onPlayerGotIngredient = (state: GameState, player: Player, task: GameTask): GameReducerReturn => {
+    player.currentTasks = player.currentTasks.filter(t => t !== task);
+    if (player.currentTasks.length === 0) {
+        //player.currentTasks = generateTasks(state, player); TODO: Gerar tasks
+    }
 
-const buildReceivedIngredientMessage = (player: Player): SendableMessage => {
-    return <SendableMessage>{
-        type: "receivedIngredient",
+    player.ingredients.push(task);
+    player.taskBeingDone = null;
+
+    state = <GameState>{
+        ...state,
+        players: state.players.map(p => {
+            if (p.id === player.id) {
+                return player;
+            }
+
+            return p;
+        })
+    }
+
+    var messages: SendableMessage[] = [];
+    messages.push(<SendableMessage>{
+        type: "gotIngredient",
         payload: {
-            tasks: player.currentTasks,
-            ingredients: player.ingredients
+            numberOfingredients: player.ingredients.length,
+            tasks: player.currentTasks
         },
         receivers: player.id
-    };
+    });
+    
+
+    return [state, messages, []];
 }
 
 const buildUnloadBagMessage = (player: Player): ErrorMessage => {
@@ -239,22 +228,50 @@ const buildUnloadBagMessage = (player: Player): ErrorMessage => {
     };
 }
 
-const changingAutoDeliveredIngredient = (state: GameState, player: Player): GameState => {
-    //TODO: ATUALIZAR O ESTADO
-    return <GameState>{
+const onAutoDeliveredIngredient = (state: GameState, player: Player, task: GameTask): GameReducerReturn => {
+    player.currentTasks = player.currentTasks.filter(t => t !== task);
+    if (player.currentTasks.length === 0) {
+        //player.currentTasks = generateTasks(state, player); TODO: Gerar tasks
+    }
+
+    player.taskBeingDone = null;
+
+    state = <GameState>{
         ...state,
-    };
+        players: state.players.map(p => {
+            if (p.id === player.id) {
+                return player;
+            }
+
+            return p;
+        }),
+        tasksDone: state.tasksDone + 1
+    }
+
+    var messages: SendableMessage[] = [];
+    if (state.tasksDone >= defaultGameRules.tasksPerWizard * state.getWizards().length) {
+        messages.push(<SendableMessage>{
+            type: "wizardsWon",
+            payload: {
+                wizards: state.getWizards(),
+                robots: state.getRobots()
+            },
+            receivers: "all"
+        });
+    } else {
+        messages.push(<SendableMessage>{
+            type: "autoCompletedTask",
+            payload: {
+                tasks: player.currentTasks,
+            },
+            receivers: player.id
+        });
+    }
+
+    return [state, messages, []];
 }
 
-const buildAutoDeliveredIngredientMessage = (player: Player): SendableMessage => {
-    return <SendableMessage>{
-        type: "autoDeliveredIngredient",
-        payload: {
-            tasks: player.currentTasks,
-        },
-        receivers: player.id
-    };
-}
+
 
 const buildShouldntScanPlayerMessage = (originPlayer: Player, targetPlayer: Player): ErrorMessage => {
     return <ErrorMessage>{
@@ -266,29 +283,38 @@ const buildShouldntScanPlayerMessage = (originPlayer: Player, targetPlayer: Play
     };
 }
 
-const changingBodyScanned = (state: GameState, targetPlayer: Player): GameState => {
-    //TODO: ATUALIZAR O ESTADO
-    return <GameState>{
+const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Player): GameReducerReturn => {
+    targetPlayer.diedRecently = false;
+
+    state = <GameState>{
         ...state,
+        players: state.players.map(p => {
+            if (p.id === targetPlayer.id) {
+                return targetPlayer;
+            }
+            return p;
+        })
     };
-}
 
-const buildYouFoundBodyMessage = (originPlayer: Player, targetPlayer: Player): SendableMessage => {
-    return <SendableMessage>{
-        type: "youFoundBody",
-        receivers: originPlayer.id
-    };
-}
-
-const buildBodyWasFoundMessage = (state: GameState, originPlayer: Player, targetPlayer: Player): SendableMessage[] => {
-    return [<SendableMessage>{
-        type: "bodyWasFound",
+    var messages: SendableMessage[] = [];
+    messages.push(<SendableMessage>{
+        type: "youFoundADeadBody",
         payload: {
-            nickname: targetPlayer.nickname,
-            tasks: [originPlayer.currentTasks] //TODO: MANDAR A LISTA DE TASKS PRA CADA PESSOA
+            deadPlayer: targetPlayer
         },
-        receivers: "all" //TODO: VER COMO MANDAR PARA TODOS
-    }];
+        receivers: originPlayer.id
+    })
+    state.players.filter(p => p.id !== originPlayer.id).forEach(p => {
+        messages.push(<SendableMessage>{
+            type: "deadBodyWasFound",
+            payload: {
+                deadPlayer: targetPlayer
+            },
+            receivers: p.id
+        })
+    })
+
+    return [state, messages, []];
 }
 
 const buildScannedGhostMessage = (originPlayer: Player, targetPlayer: Player): ErrorMessage => {
@@ -302,38 +328,63 @@ const buildScannedGhostMessage = (originPlayer: Player, targetPlayer: Player): E
     };
 }
 
-const changingPlayerReceivedPoison = (state: GameState, player: Player): GameState => {
-    //TODO: ATUALIZAR O ESTADO
-    return <GameState>{
+const onPlayerReceivedPoison = (state: GameState, player: Player): GameReducerReturn => {
+    if (player.poisons >= defaultGameRules.maxPoisons) {
+        const message = <SendableMessage>{
+            type: "error",
+            payload: {
+                imageId: "maxPoisons",
+                text: "Você já tem o máximo de veneno."
+            },
+            receivers: player.id
+        }
+        return [state, [message], []];
+    }
+
+    player.poisons++;
+    state = <GameState>{
         ...state,
-    };
-}
+        players: state.players.map(p => {
+            if (p.id === player.id) {
+                return player;
+            }
 
-const buildReceivedPoisonMessage = (player: Player): SendableMessage => {
-    return <SendableMessage>{
-        type: "receivedPoison",
+            return p;
+        })
+    };
+    const message = <SendableMessage>{
+        type: "poisonReceived",
         payload: {
-            tasks: player.currentTasks,
-            ingredients: player.ingredients
-        },
-        receivers: player.id
-    };
-}
-
-const changingPlayerDoingTask = (state: GameState, player: Player): GameState => {
-    return <GameState>{
-        ...state,
-    };
-}
-
-const buildTaskMessage = (player: Player, task: GameTask): SendableMessage => {
-    return <SendableMessage>{
-        type: "task",
-        payload: {
-            task: task
+            numberOfPoisons: player.poisons
         },
         receivers: player.id
     }
+
+    return [state, [message], []];
+}
+
+const onPlayerDoingTask = (state: GameState, player: Player, task: GameTask): GameReducerReturn => {
+    player.taskBeingDone = task;
+
+    state = <GameState>{
+        ...state,
+        players: state.players.map(p => {
+            if (p.id === player.id) {
+                return player;
+            }
+            return p;
+        })
+    }
+
+    const message = <SendableMessage>{
+        type: "task",
+        payload: {
+            task
+        },
+        receivers: player.id
+    }
+
+    return [state, [message], []];
 }
 
 const buildTaskNotInListMessage = (player: Player): ErrorMessage => {

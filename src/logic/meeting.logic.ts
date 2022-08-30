@@ -56,6 +56,7 @@ export class MeetingService {
 
     processActions(actions: SchedulableAction[]) {
         actions.forEach(a => {
+            this.scheSvc.addSchedulableAction(a);
         })
     }
 }
