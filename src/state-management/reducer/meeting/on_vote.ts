@@ -37,7 +37,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
         const maxVotes = newState.players.reduce((max, p) => p.receivedVotes.length > max ? p.receivedVotes.length : max, 0);
         
         if (newState.skipVotes.length >= maxVotes) {
-            messages.push(buildSkipMeetingMessage(newState));
+            messages.push(buildMeetingSkippedMessage(newState));
         } else {
             const playersWithMaxVotes = newState.players.filter(p => p.receivedVotes.length === maxVotes);
             
@@ -50,6 +50,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                 });
 
                 messages.push(buildPlayerKickedMessage(newState, playersWithMaxVotes[0]));
+                messages.push(buildYouWereKickedMessage(playersWithMaxVotes[0]));
 
                 if (newState.getAlivePlayers().filter(p => p.role === "robot").length === 0) {
                     messages.push(buildWizardsWonMessage(newState));
@@ -68,7 +69,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                     return p;
                 });
             } else {
-                messages.push(buildSkipMeetingMessage(newState));
+                messages.push(buildMeetingSkippedMessage(newState));
             }
         }
     } else {
@@ -78,9 +79,9 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
     return [newState, messages, []];
 }
 
-const buildSkipMeetingMessage = (state: GameState): SendableMessage => {
+const buildMeetingSkippedMessage = (state: GameState): SendableMessage => {
     return <SendableMessage>{
-        type: 'skipMeeting',
+        type: 'meetingSkipped',
         payload: {
             players: state.players,
         },
@@ -95,7 +96,14 @@ const buildPlayerKickedMessage = (state: GameState, kickedPlayer: Player): Senda
             players: state.players,
             kickedPlayer: kickedPlayer
         },
-        receivers: "all"
+        receivers: state.players.filter(p => p.id !== kickedPlayer.id).map(p => p.id)
+    };
+}
+
+const buildYouWereKickedMessage = (kickedPlayer: Player): SendableMessage => {
+    return <SendableMessage>{
+        type: 'youWereKicked',
+        receivers: kickedPlayer.id
     };
 }
 

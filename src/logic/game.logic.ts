@@ -64,8 +64,8 @@ export class GameService {
     }
 
     registerDeliverIngredient() {
-        this.connSvc.registerMessageReceiver("deliverIngredients", (message: DeliverIngredientMessage) => {
-            logger.debug(`[GameService.registerDeliverIngredients] Received deliver ingredients message ${JSON.stringify(message)}`);
+        this.connSvc.registerMessageReceiver("deliverIngredient", (message: DeliverIngredientMessage) => {
+            logger.debug(`[GameService.registerDeliverIngredient] Received deliver ingredient message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onDeliverIngredient(this.db.getGame(), message);
 

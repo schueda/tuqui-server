@@ -45,7 +45,7 @@ const onPlayerAttendedToMeeting = (state: GameState, player: Player): GameReduce
             return p;
         });
         newState.mode = "meetingHappening";
-        return [newState, [buildStartMeetingMessage()], []];
+        return [newState, [buildMeetingStartedMessage()], []];
     }
 
     return [newState, [buildAttendedToMeetingMessage(newState, player)], []];
@@ -82,9 +82,9 @@ const buildYoureDeadMessage = (player: Player): SendableMessage => {
     }
 }
 
-const buildStartMeetingMessage = (): SendableMessage => {
+const buildMeetingStartedMessage = (): SendableMessage => {
     return <SendableMessage>{
-        type: "startMeeting",
+        type: "meetingStarted",
         receivers: "all"
     }
 }

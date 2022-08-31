@@ -2,7 +2,7 @@ import { GameReducerReturn, GameState } from '../../../types/state/game.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { GameTask } from '../../../types/task';
 
-export type DeliverIngredientMessage = UserIdMessage & { payload: { ingredient: GameTask } }
+export type DeliverIngredientMessage = UserIdMessage & { payload: { ingredientId: string } }
 
 export const onDeliverIngredient = (state: GameState, message: DeliverIngredientMessage): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.useId);
@@ -10,7 +10,7 @@ export const onDeliverIngredient = (state: GameState, message: DeliverIngredient
         return [state, [], []];
     }
 
-    player.ingredients = player.ingredients.filter(i => i.uuid !== message.payload.ingredient.uuid);
+    player.ingredients = player.ingredients.filter(i => i.uuid !== message.payload.ingredientId);
 
     const newState = <GameState>{
         ...state,

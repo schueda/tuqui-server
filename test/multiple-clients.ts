@@ -74,4 +74,12 @@ describe("tuqui-test", () => {
         logger.info(`[TEST] afterAll finished`);
     });
 
+
+    test("hello -> hello world", (done) => {
+        logger.info(`[TEST] hello -> hello world starting`);
+
+        logger.info(`[TEST] hello -> hello world finished`);
+    });
+
+
 });

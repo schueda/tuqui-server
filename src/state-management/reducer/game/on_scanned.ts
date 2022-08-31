@@ -304,6 +304,7 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
         },
         receivers: originPlayer.id
     })
+    
     state.players.filter(p => p.id !== originPlayer.id).forEach(p => {
         messages.push(<SendableMessage>{
             type: "deadBodyWasFound",
