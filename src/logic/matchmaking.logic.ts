@@ -38,7 +38,7 @@ export class MatchmakingService {
                 newState: {
                     ...this.state
                 }
-            })
+            });
 
             messages.forEach(m => this.connSvc.emit(m));
         });
@@ -51,6 +51,14 @@ export class MatchmakingService {
             const [newState, messages, actions] = onSendNickname(this.state, message);
             this.state = newState;
 
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...this.state
+                }
+            });
 
             messages.forEach(m => this.connSvc.emit(m));
         });
@@ -70,7 +78,7 @@ export class MatchmakingService {
                 newState: {
                     ...this.state
                 }
-            })
+            });
 
             messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
@@ -91,7 +99,7 @@ export class MatchmakingService {
                 newState: {
                     ...this.state
                 }
-            })
+            });
 
             messages.forEach(m => this.connSvc.emit(m));
         });

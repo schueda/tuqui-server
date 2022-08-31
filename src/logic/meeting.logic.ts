@@ -7,11 +7,12 @@ import { onVote } from '../state-management/reducer/meeting/on_vote';
 import { onScanned, ScannedMessage } from '../state-management/reducer/meeting/on_scanned';
 import { onCallMeeting } from '../state-management/reducer/meeting/on_call_meeting';
 import { SchedulingService } from './scheduling.logic';
+import { StateLoggingService } from './state-logging.logic';
 
 export type VoteMessage = UserIdMessage & { payload: { votedId: string } }
 
 export class MeetingService {
-    constructor(private db: GameDatabase, private connSvc: ConnectionService, private scheSvc: SchedulingService) {
+    constructor(private db: GameDatabase, private connSvc: ConnectionService, private scheSvc: SchedulingService, private stateLoggingSvc: StateLoggingService) {
         this.registerCallMeeting();
         this.registerOnScanned();
         this.registerVote();
@@ -22,6 +23,15 @@ export class MeetingService {
             logger.debug(`[GameService.registerCallMeeting] Received call meeting message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onCallMeeting(this.db.getGame(), message);
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...newState
+                }
+            });
 
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
@@ -35,6 +45,15 @@ export class MeetingService {
 
             const [newState, messages, actions] = onScanned(this.db.getGame(), message);
 
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...newState
+                }
+            });
+
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
@@ -47,6 +66,15 @@ export class MeetingService {
             logger.debug(`[MeetingService.registerVote] Received vote message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onVote(this.db.getGame(), message);
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...newState
+                }
+            });
 
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));

@@ -1,8 +1,8 @@
 import { GameState, GameReducerReturn } from '../../../types/state/game.state';
-import { playerDiedMessage } from './on_scanned';
+import { PlayerDiedMessage } from './on_scanned';
 import { SendableMessage } from '../../../types/message';
 
-export const onPlayerDied = (state: GameState, message: playerDiedMessage): GameReducerReturn => {
+export const onPlayerDied = (state: GameState, message: PlayerDiedMessage): GameReducerReturn => {
     var player = message.payload.player;
     player.isAlive = false;
     player.diedRecently = true;

@@ -39,7 +39,7 @@ export const buildApp = (() => {
     const matchmakingStateLoggingSvc = new StateLoggingService('matchmaking', eventBusSvc);
     di.matchmakingStateLoggingSvc = matchmakingStateLoggingSvc;
 
-    const gameStateLoggingSvc = new StateLoggingService('game', eventBusSvc);
+    const gameStateLoggingSvc = new StateLoggingService('game-meeting', eventBusSvc);
     di.gameStateLoggingSvc = gameStateLoggingSvc;
 
 
@@ -56,7 +56,7 @@ export const buildApp = (() => {
     const gameSvc = new GameService(gameDb, connectionSvc, schedulingSvc, gameStateLoggingSvc);
     di.gameSvc = gameSvc;
 
-    const meetingSvc = new MeetingService(gameDb, connectionSvc, schedulingSvc);
+    const meetingSvc = new MeetingService(gameDb, connectionSvc, schedulingSvc, gameStateLoggingSvc);
     di.meetingSvc = meetingSvc;
 
 

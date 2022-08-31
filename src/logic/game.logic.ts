@@ -1,14 +1,11 @@
-import { MatchmakingUser } from '../types/state/matchmaking.state';
 import { GameDatabase } from '../data/game.db';
-import { GameState, Player } from '../types/state/game.state';
-import { defaultGameRules } from '../types/game_rules';
 import { ConnectionService } from './connection.logic';
 import { logger } from '../logger';
-import { UserIdMessage, SendableMessage } from '../types/message';
+import { UserIdMessage } from '../types/message';
 import { SchedulableAction } from '../types/action';
 import { StateLoggingService } from './state-logging.logic';
-import { ScannedMessage, onScanned, playerDiedMessageType, playerDiedMessage } from '../state-management/reducer/game/on_scanned';
-import { onDeliverIngredients } from '../state-management/reducer/game/on_deliver_ingredients';
+import { ScannedMessage, onScanned, playerDiedMessageType, PlayerDiedMessage } from '../state-management/reducer/game/on_scanned';
+import { onDeliverIngredient, DeliverIngredientMessage } from '../state-management/reducer/game/on_deliver_ingredients';
 import { SchedulingService } from './scheduling.logic';
 import { internalGameCreateActionType, GameCreateMessage } from '../state-management/reducer/matchmaking/on_confirmed_ready';
 import { onGameCreate } from '../state-management/reducer/game/on_game_create';
@@ -19,7 +16,7 @@ export class GameService {
     constructor(private db: GameDatabase, private connSvc: ConnectionService, private scheSvc: SchedulingService, private stateLoggingSvc: StateLoggingService) {
         this.registerCreateGame();
         this.registerScannedMessage();
-        this.registerDeliverIngredients();
+        this.registerDeliverIngredient();
     }
 
     registerCreateGame() {
@@ -31,7 +28,7 @@ export class GameService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    type: "gameCreated"
+                    ...message
                 },
                 newState: {
                     ...newState
@@ -58,7 +55,7 @@ export class GameService {
                 newState: {
                     ...newState
                 }
-            })
+            });
 
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
@@ -66,11 +63,20 @@ export class GameService {
         });
     }
 
-    registerDeliverIngredients() {
-        this.connSvc.registerMessageReceiver("deliverIngredients", (message: UserIdMessage) => {
+    registerDeliverIngredient() {
+        this.connSvc.registerMessageReceiver("deliverIngredients", (message: DeliverIngredientMessage) => {
             logger.debug(`[GameService.registerDeliverIngredients] Received deliver ingredients message ${JSON.stringify(message)}`);
 
-            const [newState, messages, actions] = onDeliverIngredients(this.db.getGame(), message);
+            const [newState, messages, actions] = onDeliverIngredient(this.db.getGame(), message);
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...newState
+                }
+            });
 
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
@@ -79,10 +85,19 @@ export class GameService {
     }
 
     registerKillPlayer() {
-        this.connSvc.registerMessageReceiver(playerDiedMessageType, (message: playerDiedMessage) => {
+        this.connSvc.registerMessageReceiver(playerDiedMessageType, (message: PlayerDiedMessage) => {
             logger.debug(`[GameService.registerKillPlayer] Received kill player message ${JSON.stringify(message)}`);
 
             const [newState, messafes, actions] = onPlayerDied(this.db.getGame(), message);
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...newState
+                }
+            });
 
             this.db.updateGame(newState);
             messafes.forEach(m => this.connSvc.emit(m));

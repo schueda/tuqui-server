@@ -6,7 +6,7 @@ import { defaultGameRules, GameRules } from '../../../types/game_rules';
 import { GameTask } from '../../../types/task';
 
 export type ScannedMessage = UserIdMessage & { payload: { scanResult: string } };
-export type ErrorMessage = SendableMessage & { payload: { imageId: string, text: string }}
+export type ErrorMessage = SendableMessage & { payload: { imageId: string, text: string } }
 
 export const internalStartMeetingActionType = 'startMeeting';
 
@@ -20,7 +20,7 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
         if (state.mode === "gameRunning") {
             if (defaultTags.playerTags.includes(message.payload.scanResult)) {
                 var targetPlayer = state.players.find(p => p.id === message.payload.scanResult);
-                
+
                 if (originPlayer.taskBeingDone) {
                     return [state, [buildFinishTaskMessage(originPlayer)], []];
                 }
@@ -102,7 +102,7 @@ const buildFinishTaskMessage = (player: Player): ErrorMessage => {
 export const internalPlayerPoisonedActionType = 'playerPoisoned';
 
 export const playerDiedMessageType = 'playerDied';
-export type playerDiedMessage = SendableMessage & { payload: { player: Player } };
+export type PlayerDiedMessage = SendableMessage & { payload: { player: Player } };
 
 const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: Player): GameReducerReturn => {
     state = <GameState>{
@@ -138,12 +138,12 @@ const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: 
     var actions: NewSchedulableAction[] = [];
     actions.push(<NewSchedulableAction>{
         type: internalPlayerPoisonedActionType,
-        message: <playerDiedMessage>{
+        message: <PlayerDiedMessage>{
             type: playerDiedMessageType,
             payload: {
                 player: targetPlayer
             },
-            
+
         },
         delay: defaultGameRules.timeToDie,
     });
@@ -212,7 +212,7 @@ const onPlayerGotIngredient = (state: GameState, player: Player, task: GameTask)
         },
         receivers: player.id
     });
-    
+
 
     return [state, messages, []];
 }
