@@ -1,4 +1,4 @@
-import { GameState, GameReducerReturn } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, getWizards, getRobots } from '../../../types/state/game.state';
 import { PlayerDiedMessage } from './on_scanned';
 import { SendableMessage } from '../../../types/message';
 
@@ -17,12 +17,12 @@ export const onPlayerDied = (state: GameState, message: PlayerDiedMessage): Game
         })
     }
 
-    if (state.getWizards().length === 0) {
+    if (getWizards(state).length === 0) {
         const message = <SendableMessage>{
             type: 'robotsWon',
             payload: {
-                wizards: state.getWizards(),
-                robots: state.getRobots()
+                wizards: getWizards(state),
+                robots: getRobots(state)
             },
             receivers: "all"
         }

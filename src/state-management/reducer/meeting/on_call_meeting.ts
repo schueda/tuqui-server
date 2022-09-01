@@ -1,5 +1,5 @@
 import { UserIdMessage, SendableMessage } from '../../../types/message';
-import { GameReducerReturn, GameState } from '../../../types/state/game.state';
+import { GameReducerReturn, GameState, getAlivePlayers, getOnMeetingPlayers } from '../../../types/state/game.state';
 
 export const onCallMeeting = (state: GameState, message: UserIdMessage): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
@@ -29,8 +29,8 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
         type: 'meetingCalled',
         payload: {
             players: newState.players,
-            alivePlayers: newState.players.filter(p => p.isAlive).map(p => { p.id }),
-            onMeetingPlayers: newState.players.filter(p => p.attendedToMeeting).map(p => { p.id })
+            alivePlayers: getAlivePlayers(newState).map(p => p.id ),
+            onMeetingPlayers: getOnMeetingPlayers(newState).map(p =>  p.id )
         },
         receivers: "all"
     }

@@ -2,6 +2,7 @@ import { io as Client } from "socket.io-client";
 import { SchedulableAction, SchedulableActionCategory, NewSchedulableAction } from '../types/action';
 import { SchedulingDatabase } from '../data/scheduling.db';
 import { globalVariables } from "../types/global_variables";
+import { logger } from '../logger';
 
 export class SchedulingService {
 
@@ -20,6 +21,9 @@ export class SchedulingService {
     addSchedulableAction(schedulableAction: NewSchedulableAction) {
 
         if (schedulableAction.delay === 0) {
+            logger.debug(`[SchedulingService.addSchedulableAction] Executing action immediately`);
+            logger.debug(`[SchedulingService.addSchedulableAction] Action: ${JSON.stringify(schedulableAction)}`);
+            logger.debug(`[SchedulingService.addSchedulableAction] Socket.connected: ${JSON.stringify(this.socketToServer.connected)}`);
             this.socketToServer.emit(schedulableAction.message.type, schedulableAction.message);
             return;
         }

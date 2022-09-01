@@ -1,7 +1,9 @@
 import { ConnectionDatabase } from "../data/connection.db";
-import { UserIdMessage, Message, MessageCategory, SendableMessage } from '../types/message';
+import { UserIdMessage, Message, SendableMessage } from '../types/message';
 import { logger } from '../logger';
 import { Socket } from 'socket.io';
+
+export type ReceiverRole = "user" | "service";
 
 export class ConnectionService {
 
@@ -26,7 +28,7 @@ export class ConnectionService {
             });
 
             // Register the socket for all receivers
-            for (const receiver of this.db.getAllReceivers()) {
+            for (const receiver of this.db.getAllReceivers(['user'])) {
                 logger.debug(`[ConnectionService.connect] Registering message receiver for ${receiver.messageType}`);
                 socket.on(receiver.messageType, (message: Message) => {
                     logger.debug(`[ConnectionService.connect] Received message ${receiver.messageType}`);
@@ -44,6 +46,7 @@ export class ConnectionService {
                 });
             }
         } else if (serviceId) {
+            logger.debug(`[ConnectionService.connect] Connecting service ${serviceId}`);
             this.db.updateConnection(serviceId, socket);
 
             // Handle as a service
@@ -55,6 +58,15 @@ export class ConnectionService {
                 // Fatal error
                 process.exit(10);
             });
+
+            // Register the socket for all receivers
+            for (const receiver of this.db.getAllReceivers(['service'])) {
+                logger.debug(`[ConnectionService.connect] Registering message receiver for ${receiver.messageType}`);
+                socket.on(receiver.messageType, (message: Message) => {
+                    logger.debug(`[ConnectionService.connect] Received message ${receiver.messageType}`);
+                    receiver.callback(message);
+                });
+            }
         }
     }
 
@@ -98,11 +110,11 @@ export class ConnectionService {
         }
     }
 
-    registerMessageReceiver(messageType: string, callback: (message: Message) => void) {
+    registerMessageReceiver(messageType: string, roles: ReceiverRole[], callback: (message: Message) => void) {
         // logger.debug(`[ConnectionService.registerMessageReceiver] Registering message receiver for ${messageType}`);
 
         // Store the callback in the db so we can call it for future sockets
-        this.db.registerMessageReceiver({ messageType, callback });
+        this.db.registerMessageReceiver({ messageType, callback }, roles);
     }
 
     registerConnectionReceiver(id: string, callback: (message: UserIdMessage) => void) {

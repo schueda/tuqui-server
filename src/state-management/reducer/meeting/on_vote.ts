@@ -1,10 +1,12 @@
-import { GameState, GameReducerReturn, Player } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player, getAlivePlayers } from '../../../types/state/game.state';
 import { VoteMessage } from '../../../logic/meeting.logic';
 import { SendableMessage } from '../../../types/message';
+import { logger } from '../../../logger';
 
 export const onVote = (state: GameState, message: VoteMessage): GameReducerReturn => {
-    const player = state.players.find(p => p.id === message.payload.userid);
+    const player = state.players.find(p => p.id === message.payload.userId);
     if (!player) {
+        logger.debug("[onVote] Player not found");
         return [state, [], []];
     }
 
@@ -33,7 +35,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
         newState.skipVotes.push(player.id);
     };
 
-    if (newState.players.filter(p => p.votedPlayer).length === newState.getAlivePlayers().length) {
+    if (newState.players.filter(p => p.votedPlayer).length === getAlivePlayers(newState).length) {
         const maxVotes = newState.players.reduce((max, p) => p.receivedVotes.length > max ? p.receivedVotes.length : max, 0);
         
         if (newState.skipVotes.length >= maxVotes) {
@@ -52,10 +54,10 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                 messages.push(buildPlayerKickedMessage(newState, playersWithMaxVotes[0]));
                 messages.push(buildYouWereKickedMessage(playersWithMaxVotes[0]));
 
-                if (newState.getAlivePlayers().filter(p => p.role === "robot").length === 0) {
+                if (getAlivePlayers(newState).filter(p => p.role === "robot").length === 0) {
                     messages.push(buildWizardsWonMessage(newState));
                 }
-                if (newState.getAlivePlayers().filter(p => p.role === "wizard").length === 0) {
+                if (getAlivePlayers(newState).filter(p => p.role === "wizard").length === 0) {
                     messages.push(buildRobotsWonMessage(newState));
                 }
 
@@ -75,6 +77,8 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
     } else {
         messages.push(buildUpdateVotingMessage(newState));
     };
+
+    logger.debug("[onVote] messages: " + JSON.stringify(messages));
 
     return [newState, messages, []];
 }

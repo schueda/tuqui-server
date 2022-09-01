@@ -2,6 +2,7 @@ import { GameState, GameReducerReturn, Player } from '../../../types/state/game.
 import { GameCreateMessage } from '../matchmaking/on_confirmed_ready';
 import { defaultGameRules } from '../../../types/game_rules';
 import { SendableMessage } from '../../../types/message';
+import { logger } from '../../../logger';
 
 
 export const onGameCreate = (state: GameState, message: GameCreateMessage): GameReducerReturn => {
@@ -44,7 +45,7 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage): Game
             payload: {
                 role: player.role,
                 tasks: player.currentTasks,
-                robots: state.players.filter(p => p.role === "robot" && p.id !== player.id)
+                robots: state.players.filter(p => p.role === "robot" && p.id !== player.id && player.role === "robot")
             },
             receivers: player.id
         });

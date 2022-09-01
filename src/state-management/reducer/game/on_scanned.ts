@@ -1,5 +1,5 @@
 import { NewSchedulableAction } from '../../../types/action';
-import { GameState, GameReducerReturn, Player } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player, getWizards, getRobots } from '../../../types/state/game.state';
 import { UserIdMessage, SendableMessage, Message } from '../../../types/message';
 import { defaultTags } from '../../../types/tags';
 import { defaultGameRules, GameRules } from '../../../types/game_rules';
@@ -249,12 +249,12 @@ const onAutoDeliveredIngredient = (state: GameState, player: Player, task: GameT
     }
 
     var messages: SendableMessage[] = [];
-    if (state.tasksDone >= defaultGameRules.tasksPerWizard * state.getWizards().length) {
+    if (state.tasksDone >= defaultGameRules.tasksPerWizard * getWizards(state).length) {
         messages.push(<SendableMessage>{
             type: "wizardsWon",
             payload: {
-                wizards: state.getWizards(),
-                robots: state.getRobots()
+                wizards: getWizards(state),
+                robots: getRobots(state)
             },
             receivers: "all"
         });
@@ -304,7 +304,7 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
         },
         receivers: originPlayer.id
     })
-    
+
     state.players.filter(p => p.id !== originPlayer.id).forEach(p => {
         messages.push(<SendableMessage>{
             type: "deadBodyWasFound",

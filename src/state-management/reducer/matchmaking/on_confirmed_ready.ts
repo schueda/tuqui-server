@@ -3,11 +3,11 @@ import { UserIdMessage, SendableMessage, Message } from '../../../types/message'
 import { NewSchedulableAction } from '../../../types/action';
 
 export const internalGameCreateActionType = 'internalGameCreate';
-export type GameCreateMessage = Message & { payload: {users: MatchmakingUser[]} }
+export type GameCreateMessage = Message & { payload: { users: MatchmakingUser[] } }
 
 export const onConfirmedReady = (state: MatchmakingState, message: UserIdMessage): MatchmakingReducerReturn => {
     const user = state.users.find(u => u.id === message.payload.userId);
-    if (!user) {
+    if (!user || !user.nickname) {
         return [state, [], []];
     }
 

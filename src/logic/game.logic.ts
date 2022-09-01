@@ -1,7 +1,6 @@
 import { GameDatabase } from '../data/game.db';
 import { ConnectionService } from './connection.logic';
 import { logger } from '../logger';
-import { UserIdMessage } from '../types/message';
 import { SchedulableAction } from '../types/action';
 import { StateLoggingService } from './state-logging.logic';
 import { ScannedMessage, onScanned, playerDiedMessageType, PlayerDiedMessage } from '../state-management/reducer/game/on_scanned';
@@ -20,7 +19,7 @@ export class GameService {
     }
 
     registerCreateGame() {
-        this.connSvc.registerMessageReceiver(internalGameCreateActionType, (message: GameCreateMessage) => {
+        this.connSvc.registerMessageReceiver(internalGameCreateActionType, ["service"], (message: GameCreateMessage) => {
             logger.debug(`[GameService.registerCreateGame] Received create game message ${JSON.stringify(message)}`);
             this.stateLoggingSvc.clear();
 
@@ -43,7 +42,7 @@ export class GameService {
 
 
     registerScannedMessage() {
-        this.connSvc.registerMessageReceiver("scanned", (message: ScannedMessage) => {
+        this.connSvc.registerMessageReceiver("scanned", ["user"], (message: ScannedMessage) => {
             logger.debug(`[GameService.registerScannedMessage] Received scanned message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onScanned(this.db.getGame(), message);
@@ -64,7 +63,7 @@ export class GameService {
     }
 
     registerDeliverIngredient() {
-        this.connSvc.registerMessageReceiver("deliverIngredient", (message: DeliverIngredientMessage) => {
+        this.connSvc.registerMessageReceiver("deliverIngredient", ["user"], (message: DeliverIngredientMessage) => {
             logger.debug(`[GameService.registerDeliverIngredient] Received deliver ingredient message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onDeliverIngredient(this.db.getGame(), message);
@@ -85,7 +84,7 @@ export class GameService {
     }
 
     registerKillPlayer() {
-        this.connSvc.registerMessageReceiver(playerDiedMessageType, (message: PlayerDiedMessage) => {
+        this.connSvc.registerMessageReceiver(playerDiedMessageType, ["service"], (message: PlayerDiedMessage) => {
             logger.debug(`[GameService.registerKillPlayer] Received kill player message ${JSON.stringify(message)}`);
 
             const [newState, messafes, actions] = onPlayerDied(this.db.getGame(), message);

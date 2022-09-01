@@ -1,12 +1,10 @@
-import { SchedulableAction } from '../../../types/action';
-import { GameState, GameReducerReturn, Player } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player, getOnMeetingPlayers, getAlivePlayers } from '../../../types/state/game.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { defaultTags } from '../../../types/tags';
-import { defaultGameRules, GameRules } from '../../../types/game_rules';
-import { GameTask } from '../../../types/task';
+import { logger } from '../../../logger';
 
 export type ScannedMessage = UserIdMessage & { payload: { scanResult: string } };
-export type ErrorMessage = SendableMessage & { payload: { imageId: string, text: string }}
+export type ErrorMessage = SendableMessage & { payload: { imageId: string, text: string } }
 
 export const internalStartMeetingActionType = 'startMeeting';
 
@@ -39,8 +37,8 @@ const onPlayerAttendedToMeeting = (state: GameState, player: Player): GameReduce
         })
     }
 
-    if (newState.getOnMeetingPlayers().length === newState.getAlivePlayers().length) {
-        newState.players = newState.players.map(p => { 
+    if (getOnMeetingPlayers(newState).length === getAlivePlayers(newState).length) {
+        newState.players = newState.players.map(p => {
             p.attendedToMeeting = false;
             return p;
         });
@@ -55,7 +53,7 @@ const buildAttendedToMeetingMessage = (state: GameState, player: Player): Sendab
     return <SendableMessage>{
         type: "attendedToMeeting",
         payload: {
-            onMeetingPlayers: state.getOnMeetingPlayers()
+            onMeetingPlayers: getOnMeetingPlayers(state)
         },
         receivers: player.id
     }

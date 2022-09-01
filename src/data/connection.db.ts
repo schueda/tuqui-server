@@ -1,6 +1,7 @@
 import { Socket } from 'socket.io';
 import { logger } from '../logger';
 import { Message, UserIdMessage } from '../types/message';
+import { ReceiverRole } from '../logic/connection.logic';
 
 export type UserConnectionEntry = {
     socket: Socket;
@@ -19,7 +20,7 @@ export class ConnectionDatabase {
     private connections: Map<string, UserConnectionEntry> = new Map<string, UserConnectionEntry>();
 
     // Key value database for message types and callbacks
-    private messageReceivers: Map<string, MessageReceiver> = new Map<string, MessageReceiver>();
+    private messageReceivers: Map<string, { receiver: MessageReceiver; roles: ReceiverRole[] }> = new Map<string, { receiver: MessageReceiver, roles: ReceiverRole[] }>();
 
     // Key value database for connection events
     private connectionReceivers: Map<string, ConnectionReceiver> = new Map<string, ConnectionReceiver>();
@@ -50,14 +51,19 @@ export class ConnectionDatabase {
     }
 
     // Message receiver
-    registerMessageReceiver(receiver: MessageReceiver) {
+    registerMessageReceiver(receiver: MessageReceiver, roles: ReceiverRole[]) {
         logger.debug(`[ConnectionDatabase.registerMessageReceiver] Registering message receiver for ${receiver.messageType}`);
-        this.messageReceivers.set(receiver.messageType, receiver);
+        this.messageReceivers.set(receiver.messageType, { receiver, roles });
     }
 
-    getAllReceivers(): MessageReceiver[] {
+    getAllReceivers(roles: ReceiverRole[]): MessageReceiver[] {
         logger.debug(`[ConnectionDatabase.getAllReceivers] Getting all message receivers`);
-        return Array.from(this.messageReceivers.values());
+
+        // Filter the message receivers by the roles and return the receiver only
+        return Array.from(this.messageReceivers.values())
+            .filter(entry => entry.roles.some(role => roles.includes(role)))
+            .map(entry => entry.receiver);
+
     }
 
     // Connection receiver

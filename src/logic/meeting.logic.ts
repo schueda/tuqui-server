@@ -19,7 +19,7 @@ export class MeetingService {
     }
 
     registerCallMeeting() {
-        this.connSvc.registerMessageReceiver("callMeeting", (message: UserIdMessage) => {
+        this.connSvc.registerMessageReceiver("callMeeting", ["user"], (message: UserIdMessage) => {
             logger.debug(`[GameService.registerCallMeeting] Received call meeting message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onCallMeeting(this.db.getGame(), message);
@@ -40,7 +40,7 @@ export class MeetingService {
     }
 
     registerOnScanned() {
-        this.connSvc.registerMessageReceiver('scanned', (message: ScannedMessage) => {
+        this.connSvc.registerMessageReceiver('scanned', ["user"], (message: ScannedMessage) => {
             logger.debug(`[MeetingService.registerOnScanned] Received scanned message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onScanned(this.db.getGame(), message);
@@ -62,7 +62,7 @@ export class MeetingService {
 
 
     registerVote() {
-        this.connSvc.registerMessageReceiver('vote', (message: VoteMessage) => {
+        this.connSvc.registerMessageReceiver('vote', ["user"], (message: VoteMessage) => {
             logger.debug(`[MeetingService.registerVote] Received vote message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onVote(this.db.getGame(), message);

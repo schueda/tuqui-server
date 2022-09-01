@@ -45,7 +45,7 @@ export class MatchmakingService {
     }
 
     registerSendNickname() {
-        this.connSvc.registerMessageReceiver('sendNickname', (message: SendNicknameMessage) => {
+        this.connSvc.registerMessageReceiver('sendNickname', ["user"], (message: SendNicknameMessage) => {
             logger.debug(`[MatchmakingService.registerSendNickname] Received sendNickname message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onSendNickname(this.state, message);
@@ -65,7 +65,7 @@ export class MatchmakingService {
     }
 
     registerUserConfirmedReady() {
-        this.connSvc.registerMessageReceiver('userConfirmedReady', (message: UserIdMessage) => {
+        this.connSvc.registerMessageReceiver('userConfirmedReady', ["user"], (message: UserIdMessage) => {
             logger.debug(`[MatchmakingService.registerUserConfirmedReady] Received userConfirmedReady message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onConfirmedReady(this.state, message);
@@ -86,7 +86,7 @@ export class MatchmakingService {
     }
 
     registerUserDisconnected() {
-        this.connSvc.registerMessageReceiver('userDisconnected', (message: UserIdMessage) => {
+        this.connSvc.registerMessageReceiver('userDisconnected', ["user"], (message: UserIdMessage) => {
             logger.debug(`[MatchmakingService.registerUserDisconnected] Received userDisconnected message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onUserDisconnected(this.state, message);
@@ -107,6 +107,7 @@ export class MatchmakingService {
 
     processActions(actions: NewSchedulableAction[]) {
         actions.forEach(a => {
+            logger.debug(`[MatchmakingService.processActions] Scheduling action ${JSON.stringify(a)}`);
             this.scheSvc.addSchedulableAction(a);
         })
     }
