@@ -4,6 +4,7 @@ import { UserIdMessage, SendableMessage, Message } from '../../../types/message'
 import { defaultTags } from '../../../types/tags';
 import { defaultGameRules, GameRules } from '../../../types/game_rules';
 import { GameTask } from '../../../types/task';
+import { logger } from '../../../logger';
 
 export type ScannedMessage = UserIdMessage & { payload: { scanResult: string } };
 export type ErrorMessage = SendableMessage & { payload: { imageId: string, text: string } }
@@ -13,13 +14,20 @@ export const internalStartMeetingActionType = 'startMeeting';
 export const onScanned = (state: GameState, message: ScannedMessage): GameReducerReturn => {
     var originPlayer = state.players.find(p => p.id === message.payload.userId);
     if (!originPlayer) {
+        logger.debug(`[game/onScanned] player not found`);
         return [state, [], []];
     }
 
-    if (originPlayer.isAlive) {
-        if (state.mode === "gameRunning") {
+    logger.debug(`[game/onScanned] defaultTags: ${JSON.stringify(defaultTags)}`);
+    logger.debug(`[game/onScanned] scanResult: ${message.payload.scanResult}`);
+
+    if (state.mode === "gameRunning") {
+        if (originPlayer.isAlive) {
             if (defaultTags.playerTags.includes(message.payload.scanResult)) {
                 var targetPlayer = state.players.find(p => p.id === message.payload.scanResult);
+                if (!targetPlayer) {
+                    return [state, [buildNotValidPlayerMessage(originPlayer, targetPlayer)], []];
+                }
 
                 if (originPlayer.taskBeingDone) {
                     return [state, [buildFinishTaskMessage(originPlayer)], []];
@@ -77,14 +85,28 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
                     }
                     return [state, [buildTaskNotInListMessage(originPlayer)], []];
                 }
+                return [state, [buildTaskNotInListMessage(originPlayer)], []];
             }
             if (defaultTags.campfireTag == message.payload.scanResult) {
                 return [state, [buildOnTheCampfireMessage(originPlayer)], []];
             }
             return [state, [buildInvalidTagMessage(originPlayer)], []];
+        } else {
+            return [state, [buildYoureDeadMessage(originPlayer)], []];
         }
-    } else {
-        return [state, [buildYoureDeadMessage(originPlayer)], []];
+    }
+
+    return [undefined, [], []];
+}
+
+const buildNotValidPlayerMessage = (originPlayer: Player, targetPlayer: Player): ErrorMessage => {
+    return <ErrorMessage>{
+        type: "error",
+        payload: {
+            imageId: targetPlayer.taskBeingDone.scanId,
+            text: "Esse jogador não está jogando."
+        },
+        receivers: originPlayer.id
     }
 }
 
@@ -179,7 +201,8 @@ const buildCantPoisonRobot = (originPlayer: Player, targetPlayer: Player): Error
         payload: {
             imageId: "cantPoisonRobot",
             text: `Você não pode envenar ${targetPlayer.nickname}, ele também é um robô.`
-        }
+        },
+        receivers: originPlayer.id
     };
 }
 
@@ -279,7 +302,8 @@ const buildShouldntScanPlayerMessage = (originPlayer: Player, targetPlayer: Play
         payload: {
             imageId: "shouldntScanPlayer",
             text: `Você não deve escanear ${targetPlayer.nickname}.`
-        }
+        },
+        receivers: originPlayer.id
     };
 }
 

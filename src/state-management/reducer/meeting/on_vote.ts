@@ -23,11 +23,10 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
             };
 
             if (p.id === message.payload.votedId) {
-                return {
-                    ...p,
-                    receivedVotes: p.receivedVotes.push(player.id)
-                };
+                p.receivedVotes.push(message.payload.votedId);
             };
+
+            return p;
         })
     };
 
@@ -35,14 +34,15 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
         newState.skipVotes.push(player.id);
     };
 
+    logger.debug("[onVote] New state.players: " + JSON.stringify(newState.players));
     if (newState.players.filter(p => p.votedPlayer).length === getAlivePlayers(newState).length) {
         const maxVotes = newState.players.reduce((max, p) => p.receivedVotes.length > max ? p.receivedVotes.length : max, 0);
-        
+
         if (newState.skipVotes.length >= maxVotes) {
             messages.push(buildMeetingSkippedMessage(newState));
         } else {
             const playersWithMaxVotes = newState.players.filter(p => p.receivedVotes.length === maxVotes);
-            
+
             if (playersWithMaxVotes.length === 1) {
                 newState.players = newState.players.map(p => {
                     if (p.id === playersWithMaxVotes[0].id) {
@@ -60,25 +60,22 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                 if (getAlivePlayers(newState).filter(p => p.role === "wizard").length === 0) {
                     messages.push(buildRobotsWonMessage(newState));
                 }
-
-
-                newState.mode = "gameRunning";
-                newState.players = newState.players.map(p => { 
-                    p.votedPlayer = null 
-                    p.receivedVotes = [];
-                    p.attendedToMeeting = false;
-
-                    return p;
-                });
             } else {
                 messages.push(buildMeetingSkippedMessage(newState));
             }
+
+            newState.players = newState.players.map(p => {
+                p.votedPlayer = null
+                p.receivedVotes = [];
+                p.attendedToMeeting = false;
+
+                return p;
+            });
+            newState.mode = "gameRunning";
         }
     } else {
         messages.push(buildUpdateVotingMessage(newState));
     };
-
-    logger.debug("[onVote] messages: " + JSON.stringify(messages));
 
     return [newState, messages, []];
 }
@@ -115,7 +112,7 @@ const buildUpdateVotingMessage = (state: GameState): SendableMessage => {
     return <SendableMessage>{
         type: 'updateVoting',
         payload: {
-            alreadyVotedPlayers: state.players.filter(p => p.votedPlayer),
+            alreadyVotedPlayers: state.players.filter(p => p.votedPlayer).map(p => p.id)
         },
         receivers: "all"
     }

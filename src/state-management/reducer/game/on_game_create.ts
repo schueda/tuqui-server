@@ -18,7 +18,8 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage): Game
         poisons: 0,
         currentTasks: [],
 
-        attendedToMeeting: false
+        attendedToMeeting: false,
+        receivedVotes: []
     });
 
     // Generate an array from 0 to player len
@@ -34,6 +35,8 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage): Game
         players,
         tasksDone: 0,
         totalTasks: gameRules.tasksPerWizard * players.filter(p => p.role === "wizard").length,
+
+        skipVotes: [],
 
         mode: "gameRunning"
     };

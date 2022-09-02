@@ -27,7 +27,7 @@ export const onConfirmedReady = (state: MatchmakingState, message: UserIdMessage
 
     const readyCount = newState.users.filter(u => u.ready).length;
     //TODO: Move to a envfile or gameRules
-    if (readyCount === newState.users.length && newState.users.length >= 4) {
+    if (readyCount === newState.users.length && newState.users.length >= 1) {
         const internalGameCreateAction = <NewSchedulableAction>{
             message: <GameCreateMessage>{
                 type: internalGameCreateActionType,

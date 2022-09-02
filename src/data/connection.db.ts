@@ -20,7 +20,7 @@ export class ConnectionDatabase {
     private connections: Map<string, UserConnectionEntry> = new Map<string, UserConnectionEntry>();
 
     // Key value database for message types and callbacks
-    private messageReceivers: Map<string, { receiver: MessageReceiver; roles: ReceiverRole[] }> = new Map<string, { receiver: MessageReceiver, roles: ReceiverRole[] }>();
+    private messageReceivers: Map<string, { receiver: MessageReceiver; roles: ReceiverRole[] }[]> = new Map<string, { receiver: MessageReceiver, roles: ReceiverRole[] }[]>();
 
     // Key value database for connection events
     private connectionReceivers: Map<string, ConnectionReceiver> = new Map<string, ConnectionReceiver>();
@@ -53,7 +53,15 @@ export class ConnectionDatabase {
     // Message receiver
     registerMessageReceiver(receiver: MessageReceiver, roles: ReceiverRole[]) {
         logger.debug(`[ConnectionDatabase.registerMessageReceiver] Registering message receiver for ${receiver.messageType}`);
-        this.messageReceivers.set(receiver.messageType, { receiver, roles });
+
+        // If a receiver already exists for this type, add it to the list
+        if (this.messageReceivers.has(receiver.messageType)) {
+            this.messageReceivers.get(receiver.messageType).push({ receiver, roles });
+        }
+        // Otherwise, create a new list
+        else {
+            this.messageReceivers.set(receiver.messageType, [{ receiver, roles }]);
+        }
     }
 
     getAllReceivers(roles: ReceiverRole[]): MessageReceiver[] {
@@ -61,9 +69,9 @@ export class ConnectionDatabase {
 
         // Filter the message receivers by the roles and return the receiver only
         return Array.from(this.messageReceivers.values())
+            .flat()
             .filter(entry => entry.roles.some(role => roles.includes(role)))
             .map(entry => entry.receiver);
-
     }
 
     // Connection receiver

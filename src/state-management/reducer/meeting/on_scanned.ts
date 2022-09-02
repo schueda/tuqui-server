@@ -14,16 +14,20 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
         return [state, [], []];
     }
 
-    if (originPlayer.isAlive) {
-        if (state.mode === "meetingCalled") {
-            if (defaultTags.campfireTag == message.payload.scanResult) {
+    logger.debug(`[meeting/onScanned] gameState: ${JSON.stringify(state)}`);
+
+    if (state.mode === "meetingCalled") {
+        if (originPlayer.isAlive) {
+            if (defaultTags.campfireTag === message.payload.scanResult) {
                 return onPlayerAttendedToMeeting(state, originPlayer);
             };
             return [state, [buildGoToCampfireMessage(originPlayer)], []];
+        } else {
+            return [state, [buildYoureDeadMessage(originPlayer)], []];
         };
-    } else {
-        return [state, [buildYoureDeadMessage(originPlayer)], []];
     };
+
+    return [undefined, [], []];
 }
 
 const onPlayerAttendedToMeeting = (state: GameState, player: Player): GameReducerReturn => {
@@ -53,7 +57,7 @@ const buildAttendedToMeetingMessage = (state: GameState, player: Player): Sendab
     return <SendableMessage>{
         type: "attendedToMeeting",
         payload: {
-            onMeetingPlayers: getOnMeetingPlayers(state)
+            onMeetingPlayers: getOnMeetingPlayers(state).map(p => p.id)
         },
         receivers: player.id
     }
@@ -83,6 +87,7 @@ const buildYoureDeadMessage = (player: Player): SendableMessage => {
 const buildMeetingStartedMessage = (): SendableMessage => {
     return <SendableMessage>{
         type: "meetingStarted",
+        payload: {},
         receivers: "all"
     }
 }

@@ -25,7 +25,7 @@ export type GameState = {
     totalTasks: number;
 
     mode: "gameRunning" | "meetingCalled" | "meetingHappening";
-    skipVotes: string[];x
+    skipVotes: string[];
 }
 
 

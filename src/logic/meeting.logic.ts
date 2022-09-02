@@ -45,6 +45,10 @@ export class MeetingService {
 
             const [newState, messages, actions] = onScanned(this.db.getGame(), message);
 
+            if (newState == undefined) {
+                return;
+            }
+
             this.stateLoggingSvc.log({
                 message: {
                     ...message
