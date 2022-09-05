@@ -30,11 +30,12 @@ export class SchedulingService {
 
         // Create setTimeout
         const cancellable = setTimeout(() => {
+            logger.debug(`[SchedulingService.addSchedulableAction] Executing action`);
             // Remove from list
             this.schedulableActions = this.schedulableActions.filter(a => a.id !== identifiableAction.id);
 
             // Process the action
-            this.socketToServer.emit(identifiableAction.message.type, identifiableAction.message.payload);
+            this.socketToServer.emit(identifiableAction.message.type, identifiableAction.message);
         }, schedulableAction.delay);
 
         // Assign ID

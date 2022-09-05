@@ -1,17 +1,18 @@
 import { NewSchedulableAction } from '../../../types/action';
 import { GameState, GameReducerReturn, Player, getWizards, getRobots } from '../../../types/state/game.state';
-import { UserIdMessage, SendableMessage, Message } from '../../../types/message';
+import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { defaultTags } from '../../../types/tags';
-import { defaultGameRules, GameRules } from '../../../types/game_rules';
-import { GameTask } from '../../../types/task';
+import { defaultGameRules } from '../../../types/game_rules';
+import { GameTask } from '../../../types/game_task';
 import { logger } from '../../../logger';
+import { GameTaskGenerator } from '../../../types/game_task_generator';
 
 export type ScannedMessage = UserIdMessage & { payload: { scanResult: string } };
 export type ErrorMessage = SendableMessage & { payload: { imageId: string, text: string } }
 
 export const internalStartMeetingActionType = 'startMeeting';
 
-export const onScanned = (state: GameState, message: ScannedMessage): GameReducerReturn => {
+export const onScanned = (state: GameState, message: ScannedMessage, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     var originPlayer = state.players.find(p => p.id === message.payload.userId);
     if (!originPlayer) {
         logger.debug(`[game/onScanned] player not found`);
@@ -26,7 +27,11 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
             if (defaultTags.playerTags.includes(message.payload.scanResult)) {
                 var targetPlayer = state.players.find(p => p.id === message.payload.scanResult);
                 if (!targetPlayer) {
-                    return [state, [buildNotValidPlayerMessage(originPlayer, targetPlayer)], []];
+                    return [state, [buildNotValidPlayerMessage(originPlayer)], []];
+                }
+
+                if (targetPlayer.id === originPlayer.id) {
+                    return [state, [buildScanningYourselfMessage(originPlayer)], []];
                 }
 
                 if (originPlayer.taskBeingDone) {
@@ -45,16 +50,16 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
                         }
                         return [state, [buildCantPoisonRobot(originPlayer, targetPlayer)], []];
                     }
-                    const task = originPlayer.currentTasks.find(t => t.scanId === message.payload.scanResult);
+                    const task = originPlayer.currentTasks.find(t => t.type === 'scanPlayer');
                     if (task) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
                             if (originPlayer.ingredients.length < defaultGameRules.maxIngredients) {
-                                return onPlayerGotIngredient(state, originPlayer, task);
+                                return onPlayerGotIngredient(state, originPlayer, task, taskGenerator);
                             }
                             return [state, [buildUnloadBagMessage(originPlayer)], []];
                         }
                         if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
-                            return onAutoDeliveredIngredient(state, originPlayer, task);
+                            return onAutoDeliveredIngredient(state, originPlayer, task, taskGenerator);
                         }
                     }
                     return [state, [buildShouldntScanPlayerMessage(originPlayer, targetPlayer)], []];
@@ -69,12 +74,12 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
                 if (taskBeingDone) {
                     if (taskBeingDone.scanId === message.payload.scanResult) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            return onPlayerGotIngredient(state, originPlayer, taskBeingDone);
+                            return onPlayerGotIngredient(state, originPlayer, taskBeingDone, taskGenerator);
                         }
                         if (originPlayer.role === "robot") {
                             return onPlayerReceivedPoison(state, originPlayer);
                         }
-                        return onAutoDeliveredIngredient(state, originPlayer, taskBeingDone);
+                        return onAutoDeliveredIngredient(state, originPlayer, taskBeingDone, taskGenerator);
                     }
                     return [state, [buildFinishTaskMessage(originPlayer)], []];
                 }
@@ -99,11 +104,11 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
     return [undefined, [], []];
 }
 
-const buildNotValidPlayerMessage = (originPlayer: Player, targetPlayer: Player): ErrorMessage => {
+const buildNotValidPlayerMessage = (originPlayer: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: targetPlayer.taskBeingDone.scanId,
+            imageId: "notPlayingPlayer",
             text: "Esse jogador não está jogando."
         },
         receivers: originPlayer.id
@@ -170,7 +175,7 @@ const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: 
         delay: defaultGameRules.timeToDie,
     });
 
-    return [state, messages, []];
+    return [state, messages, actions];
 }
 
 const buildAlreadyPoisonedMessage = (originPlayer: Player, targetPlayer: Player): ErrorMessage => {
@@ -206,10 +211,10 @@ const buildCantPoisonRobot = (originPlayer: Player, targetPlayer: Player): Error
     };
 }
 
-const onPlayerGotIngredient = (state: GameState, player: Player, task: GameTask): GameReducerReturn => {
+const onPlayerGotIngredient = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     player.currentTasks = player.currentTasks.filter(t => t !== task);
     if (player.currentTasks.length === 0) {
-        //player.currentTasks = generateTasks(state, player); TODO: Gerar tasks
+        player.currentTasks = taskGenerator.generateTasks();
     }
 
     player.ingredients.push(task);
@@ -240,6 +245,17 @@ const onPlayerGotIngredient = (state: GameState, player: Player, task: GameTask)
     return [state, messages, []];
 }
 
+const buildScanningYourselfMessage = (player: Player): ErrorMessage => {
+    return <ErrorMessage>{
+        type: "error",
+        payload: {
+            imageId: "scanningYourself",
+            text: "Você não pode se escanear. BURRO!"
+        },
+        receivers: player.id
+    };
+}
+
 const buildUnloadBagMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
@@ -251,10 +267,10 @@ const buildUnloadBagMessage = (player: Player): ErrorMessage => {
     };
 }
 
-const onAutoDeliveredIngredient = (state: GameState, player: Player, task: GameTask): GameReducerReturn => {
+const onAutoDeliveredIngredient = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     player.currentTasks = player.currentTasks.filter(t => t !== task);
     if (player.currentTasks.length === 0) {
-        //player.currentTasks = generateTasks(state, player); TODO: Gerar tasks
+        player.currentTasks = taskGenerator.generateTasks();
     }
 
     player.taskBeingDone = null;

@@ -1,6 +1,7 @@
-import { SchedulableAction } from '../action';
+
 import { SendableMessage } from '../message';
-import { GameTask } from '../task';
+import { GameTask } from '../game_task';
+import { NewSchedulableAction } from '../../types/action';
 
 export type Player = {
     id: string;
@@ -49,4 +50,4 @@ export function getPlayerById(state: GameState, id: string): Player {
     return state.players.find(p => p.id === id);
 }
 
-export type GameReducerReturn = [GameState, SendableMessage[], SchedulableAction[]];
+export type GameReducerReturn = [GameState, SendableMessage[], NewSchedulableAction[]];

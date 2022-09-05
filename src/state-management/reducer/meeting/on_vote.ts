@@ -83,9 +83,6 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
 const buildMeetingSkippedMessage = (state: GameState): SendableMessage => {
     return <SendableMessage>{
         type: 'meetingSkipped',
-        payload: {
-            players: state.players,
-        },
         receivers: "all"
     };
 }
@@ -94,7 +91,6 @@ const buildPlayerKickedMessage = (state: GameState, kickedPlayer: Player): Senda
     return <SendableMessage>{
         type: 'playerKicked',
         payload: {
-            players: state.players,
             kickedPlayer: kickedPlayer
         },
         receivers: state.players.filter(p => p.id !== kickedPlayer.id).map(p => p.id)
@@ -112,7 +108,7 @@ const buildUpdateVotingMessage = (state: GameState): SendableMessage => {
     return <SendableMessage>{
         type: 'updateVoting',
         payload: {
-            alreadyVotedPlayers: state.players.filter(p => p.votedPlayer).map(p => p.id)
+            alreadyVotedPlayers: state.players.filter(p => p.votedPlayer || p.votedPlayer === null).map(p => p.id)
         },
         receivers: "all"
     }

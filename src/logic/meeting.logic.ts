@@ -2,12 +2,12 @@ import { GameDatabase } from '../data/game.db';
 import { ConnectionService } from './connection.logic';
 import { UserIdMessage } from '../types/message';
 import { logger } from '../logger';
-import { SchedulableAction } from '../types/action';
 import { onVote } from '../state-management/reducer/meeting/on_vote';
 import { onScanned, ScannedMessage } from '../state-management/reducer/meeting/on_scanned';
 import { onCallMeeting } from '../state-management/reducer/meeting/on_call_meeting';
 import { SchedulingService } from './scheduling.logic';
 import { StateLoggingService } from './state-logging.logic';
+import { NewSchedulableAction } from '../types/action';
 
 export type VoteMessage = UserIdMessage & { payload: { votedId: string } }
 
@@ -86,7 +86,7 @@ export class MeetingService {
         })
     }
 
-    processActions(actions: SchedulableAction[]) {
+    processActions(actions: NewSchedulableAction[]) {
         actions.forEach(a => {
             this.scheSvc.addSchedulableAction(a);
         })

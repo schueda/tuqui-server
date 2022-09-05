@@ -3,9 +3,10 @@ import { GameCreateMessage } from '../matchmaking/on_confirmed_ready';
 import { defaultGameRules } from '../../../types/game_rules';
 import { SendableMessage } from '../../../types/message';
 import { logger } from '../../../logger';
+import { GameTaskGenerator } from '../../../types/game_task_generator';
 
 
-export const onGameCreate = (state: GameState, message: GameCreateMessage): GameReducerReturn => {
+export const onGameCreate = (state: GameState, message: GameCreateMessage, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     const gameRules = defaultGameRules;
 
     var players = <Player[]>message.payload.users.map(u => <Player>{
@@ -16,8 +17,7 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage): Game
         diedRecently: false,
         ingredients: [],
         poisons: 0,
-        currentTasks: [],
-
+        currentTasks: taskGenerator.generateTasks(),
         attendedToMeeting: false,
         receivedVotes: []
     });
