@@ -17,7 +17,7 @@ export const onPlayerDied = (state: GameState, message: PlayerDiedMessage): Game
         })
     }
 
-    if (getWizards(state).length === 0) {
+    if (getWizards(state).filter(p => player.isAlive).length === 0) {
         const message = <SendableMessage>{
             type: 'robotsWon',
             payload: {

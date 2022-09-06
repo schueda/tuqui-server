@@ -17,6 +17,7 @@ export class GameService {
         this.registerCreateGame();
         this.registerScannedMessage();
         this.registerDeliverIngredient();
+        this.registerKillPlayer();
     }
 
     taskGenerator = new GameTaskGenerator();
@@ -94,7 +95,7 @@ export class GameService {
         this.connSvc.registerMessageReceiver(playerDiedMessageType, ["service"], (message: PlayerDiedMessage) => {
             logger.debug(`[GameService.registerKillPlayer] Received kill player message ${JSON.stringify(message)}`);
 
-            const [newState, messafes, actions] = onPlayerDied(this.db.getGame(), message);
+            const [newState, messages, actions] = onPlayerDied(this.db.getGame(), message);
 
             this.stateLoggingSvc.log({
                 message: {
@@ -106,13 +107,14 @@ export class GameService {
             });
 
             this.db.updateGame(newState);
-            messafes.forEach(m => this.connSvc.emit(m));
+            messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
 
         });
     }
 
     processActions(actions: NewSchedulableAction[]) {
+        logger.debug(`[GameService.processActions] Processing actions ${JSON.stringify(actions)}`);
         actions.forEach(a => {
             this.scheSvc.addSchedulableAction(a);
         });

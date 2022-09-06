@@ -14,8 +14,6 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
         return [state, [], []];
     }
 
-    logger.debug(`[meeting/onScanned] gameState: ${JSON.stringify(state)}`);
-
     if (state.mode === "meetingCalled") {
         if (originPlayer.isAlive) {
             if (defaultTags.campfireTag === message.payload.scanResult) {
