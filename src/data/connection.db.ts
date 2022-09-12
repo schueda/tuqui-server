@@ -25,6 +25,9 @@ export class ConnectionDatabase {
     // Key value database for connection events
     private connectionReceivers: Map<string, ConnectionReceiver> = new Map<string, ConnectionReceiver>();
 
+    // Key value database for disconnection events
+    private disconnectionReceivers: Map<string, ConnectionReceiver> = new Map<string, ConnectionReceiver>();
+
     updateConnection(userId: string, socket: Socket) {
         logger.debug(`[ConnectionDatabase.updateConnection] Updating connection for ${userId}`);
         this.connections.set(userId, { socket: socket });
@@ -83,5 +86,16 @@ export class ConnectionDatabase {
     getAllConnectionReceivers(): ConnectionReceiver[] {
         logger.debug(`[ConnectionDatabase.getAllConnectionReceivers] Getting all connection receivers`);
         return Array.from(this.connectionReceivers.values());
+    }
+
+
+    registerDisconnectionReceiver(id: string, callback: ConnectionReceiver) {
+        logger.debug(`[ConnectionDatabase.registerDisconnectionReceiver] Registering disconnection receiver for ${id}`);
+        this.disconnectionReceivers.set(id, callback);
+    }
+
+    getAllDisconnectionReceivers(): ConnectionReceiver[] {
+        logger.debug(`[ConnectionDatabase.getAllDisconnectionReceivers] Getting all disconnection receivers`);
+        return Array.from(this.disconnectionReceivers.values());
     }
 }

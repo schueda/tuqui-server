@@ -73,7 +73,14 @@ export class ConnectionService {
     disconnect(socket: Socket) {
         logger.debug(`[ConnectionService.disconnect] Disconnecting socket ${socket.id}`);
 
-        // this.db.updateConnection(socket.id, undefined);
+        for (const receiver of this.db.getAllDisconnectionReceivers()) {
+            receiver(<UserIdMessage>{
+                type: 'disconnection',
+                payload: {
+                    userId: socket.handshake.query.userId,
+                },
+            });
+        }
     }
 
     emit(message: SendableMessage) {
@@ -122,5 +129,12 @@ export class ConnectionService {
 
         // Store the callback in the db so we can call it for future sockets
         this.db.registerConnectionReceiver(id, callback);
+    }
+
+    registerDisconnectionReceiver(id: string, callback: (message: UserIdMessage) => void) {
+        // logger.debug(`[ConnectionService.registerDisconnectionReceiver] Registering disconnection receiver for ${id}`);
+
+        // Store the callback in the db so we can call it for future sockets
+        this.db.registerDisconnectionReceiver(id, callback);
     }
 }

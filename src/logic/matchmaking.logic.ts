@@ -86,7 +86,7 @@ export class MatchmakingService {
     }
 
     registerUserDisconnected() {
-        this.connSvc.registerMessageReceiver('userDisconnected', ["user"], (message: UserIdMessage) => {
+        this.connSvc.registerDisconnectionReceiver('userDisconnected', (message: UserIdMessage) => {
             logger.debug(`[MatchmakingService.registerUserDisconnected] Received userDisconnected message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onUserDisconnected(this.state, message);
