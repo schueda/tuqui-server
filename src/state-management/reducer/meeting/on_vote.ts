@@ -1,4 +1,4 @@
-import { GameState, GameReducerReturn, Player, getAlivePlayers } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player, getAlivePlayers, getRobots, getWizards } from '../../../types/state/game.state';
 import { VoteMessage } from '../../../logic/meeting.logic';
 import { SendableMessage } from '../../../types/message';
 import { logger } from '../../../logger';
@@ -82,16 +82,19 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
 
 const buildMeetingSkippedMessage = (state: GameState): SendableMessage => {
     return <SendableMessage>{
-        type: 'meetingSkipped',
+        type: "meetingSkipped",
         receivers: "all"
     };
 }
 
 const buildPlayerKickedMessage = (state: GameState, kickedPlayer: Player): SendableMessage => {
     return <SendableMessage>{
-        type: 'playerKicked',
+        type: "playerKicked",
         payload: {
-            kickedPlayer: kickedPlayer
+            player: {
+                scanId: kickedPlayer.id,
+                nickname: kickedPlayer.nickname
+            }
         },
         receivers: state.players.filter(p => p.id !== kickedPlayer.id).map(p => p.id)
     };
@@ -99,16 +102,16 @@ const buildPlayerKickedMessage = (state: GameState, kickedPlayer: Player): Senda
 
 const buildYouWereKickedMessage = (kickedPlayer: Player): SendableMessage => {
     return <SendableMessage>{
-        type: 'youWereKicked',
+        type: "youWereKicked",
         receivers: kickedPlayer.id
     };
 }
 
 const buildUpdateVotingMessage = (state: GameState): SendableMessage => {
     return <SendableMessage>{
-        type: 'updateVoting',
+        type: "updateVoting",
         payload: {
-            alreadyVotedPlayers: state.players.filter(p => p.votedPlayer || p.votedPlayer === null).map(p => p.id)
+            playersIds: state.players.filter(p => p.votedPlayer || p.votedPlayer === null).map(p => p.id)
         },
         receivers: "all"
     }
@@ -116,10 +119,20 @@ const buildUpdateVotingMessage = (state: GameState): SendableMessage => {
 
 const buildWizardsWonMessage = (state: GameState): SendableMessage => {
     return <SendableMessage>{
-        type: 'wizardsWon',
+        type: "wizardsWon",
         payload: {
-            robotsId: state.players.filter(p => p.role === "robot").map(p => p.id),
-            wizardsId: state.players.filter(p => p.role === "wizard").map(p => p.id)
+            robots: getRobots(state).map(p => {
+                return {
+                    scanId: p.id,
+                    nickname: p.nickname
+                }
+            }),
+            wizards: getWizards(state).map(p => {
+                return {
+                    scanId: p.id,
+                    nickname: p.nickname
+                }
+            })
         },
         receivers: "all"
     };
@@ -127,10 +140,20 @@ const buildWizardsWonMessage = (state: GameState): SendableMessage => {
 
 const buildRobotsWonMessage = (state: GameState): SendableMessage => {
     return <SendableMessage>{
-        type: 'robotsWon',
+        type: "robotsWon",
         payload: {
-            robotsId: state.players.filter(p => p.role === "robot").map(p => p.id),
-            wizardsId: state.players.filter(p => p.role === "wizard").map(p => p.id)
+            robots: getRobots(state).map(p => {
+                return {
+                    scanId: p.id,
+                    nickname: p.nickname
+                }
+            }),
+            wizards: getWizards(state).map(p => {
+                return {
+                    scanId: p.id,
+                    nickname: p.nickname
+                }
+            })
         },
         receivers: "all"
     };

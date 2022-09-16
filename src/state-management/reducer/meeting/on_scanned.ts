@@ -48,16 +48,23 @@ const onPlayerAttendedToMeeting = (state: GameState, player: Player): GameReduce
         return [newState, [buildMeetingStartedMessage()], []];
     }
 
-    return [newState, [buildAttendedToMeetingMessage(newState, player)], []];
+    return [newState, [buildYoureOnLobbyMessage(player), buildPlayerOnMeetingLobbyMessage(newState)], []];
 }
 
-const buildAttendedToMeetingMessage = (state: GameState, player: Player): SendableMessage => {
+const buildYoureOnLobbyMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
-        type: "attendedToMeeting",
-        payload: {
-            onMeetingPlayers: getOnMeetingPlayers(state).map(p => p.id)
-        },
+        type: "onMeetingLobby",
         receivers: player.id
+    }
+}
+
+const buildPlayerOnMeetingLobbyMessage = (state: GameState): SendableMessage => {
+    return <SendableMessage>{
+        type: "playerOnMeetingLobby",
+        payload: {
+            playersIds: getOnMeetingPlayers(state).map(p => p.id)
+        },
+        receivers: "all"
     }
 }
 
@@ -74,9 +81,10 @@ const buildGoToCampfireMessage = (player: Player): ErrorMessage => {
 
 const buildYoureDeadMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
-        type: "youreDead",
+        type: "error",
         payload: {
-            nickname: player.nickname
+            imageId: "youreDead",
+            text: "Você está morto."
         },
         receivers: player.id
     }
@@ -85,7 +93,6 @@ const buildYoureDeadMessage = (player: Player): SendableMessage => {
 const buildMeetingStartedMessage = (): SendableMessage => {
     return <SendableMessage>{
         type: "meetingStarted",
-        payload: {},
         receivers: "all"
     }
 }

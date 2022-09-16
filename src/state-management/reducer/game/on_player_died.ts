@@ -19,10 +19,20 @@ export const onPlayerDied = (state: GameState, message: PlayerDiedMessage): Game
 
     if (getWizards(state).filter(p => player.isAlive).length === 0) {
         const message = <SendableMessage>{
-            type: 'robotsWon',
+            type: "robotsWon",
             payload: {
-                wizards: getWizards(state),
-                robots: getRobots(state)
+                wizards: getWizards(state).map(p => {
+                    return {
+                        id: p.id,
+                        nickname: p.nickname
+                    }
+                }),
+                robots: getRobots(state).map(p => {
+                    return {
+                        id: p.id,
+                        nickname: p.nickname
+                    }
+                })
             },
             receivers: "all"
         }
@@ -31,7 +41,7 @@ export const onPlayerDied = (state: GameState, message: PlayerDiedMessage): Game
     }
 
     const youDiedMessage = <SendableMessage>{
-        type: 'youDied',
+        type: "youDied",
         receivers: player.id
     }
     return [state, [youDiedMessage], []];

@@ -42,15 +42,15 @@ export const onConfirmedReady = (state: MatchmakingState, message: UserIdMessage
     }
 
     const playerReadyMessage = <SendableMessage>{
-        type: 'playerReady',
+        type: "userReady",
         payload: {
-            users: newState.users
+            userId: message.payload.userId
         },
         receivers: state.users.filter(u => u.nickname).map(u => u.id)
     };
 
     const youreReadyMessage = <SendableMessage>{
-        type: 'youreReady',
+        type: "youreReady",
         receivers: user.id
     };
 

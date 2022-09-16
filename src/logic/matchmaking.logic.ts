@@ -1,6 +1,6 @@
 import { MatchmakingDatabase } from '../data/matchmaking.db';
 import { ConnectionService } from './connection.logic';
-import { UserIdMessage } from '../types/message';
+import { UserIdMessage, SendableMessage } from '../types/message';
 import { logger } from '../logger';
 import { MatchmakingState } from '../types/state/matchmaking.state';
 import { onUserConnected } from '../state-management/reducer/matchmaking/on_user_connected';
@@ -15,6 +15,8 @@ export class MatchmakingService {
     constructor(private db: MatchmakingDatabase, private connSvc: ConnectionService, private scheSvc: SchedulingService, private stateLoggingSvc: StateLoggingService) {
         this.registerUserConnect();
         this.registerUserDisconnected();
+
+        this.registerFetchLobbyData();
 
         this.registerSendNickname();
         this.registerUserConfirmedReady();
@@ -102,6 +104,20 @@ export class MatchmakingService {
             });
 
             messages.forEach(m => this.connSvc.emit(m));
+        });
+    }
+
+    registerFetchLobbyData() {
+        this.connSvc.registerMessageReceiver('fetchLobbyData', ["user"], (message: UserIdMessage) => {
+            logger.debug(`[MatchmakingService.registerFetchLobby] Received fetchLobby message ${JSON.stringify(message)}`);
+
+            this.connSvc.emit(<SendableMessage>{
+                type: "updateGameLobby",
+                payload: {
+                    users: this.state.users
+                },
+                receivers: message.payload.userId
+            });
         });
     }
 

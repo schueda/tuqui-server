@@ -26,9 +26,9 @@ export const onDeliverIngredient = (state: GameState, message: DeliverIngredient
         }
 
         const gotPoisonMessage = <SendableMessage>{
-            type: 'gotPoison',
+            type: "gotPoison",
             payload: {
-                numberOfPoisons: player.poisons                
+                numberOfPoisons: player.poisons       
             },
             receivers: player.id
         }
@@ -47,7 +47,7 @@ export const onDeliverIngredient = (state: GameState, message: DeliverIngredient
         }
     
         const deliveredIngredientMessage = <SendableMessage>{
-            type: 'deliveredIngredient',
+            type: "deliveredIngredient",
             payload: {
                 ingredients: player.ingredients
             },

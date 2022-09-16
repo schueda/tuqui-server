@@ -8,9 +8,9 @@ export const onUserDisconnected = (state: MatchmakingState, message: UserIdMessa
     };
 
     const updateLobbyMessage = <SendableMessage>{
-        type: 'playerDisconnected',
+        type: "userDisconnected",
         payload: {
-            users: newState.users
+            userId: message.payload.userId
         },
         receivers: state.users.filter(u => u.nickname).map(u => u.id)
     }

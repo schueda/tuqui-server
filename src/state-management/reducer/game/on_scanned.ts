@@ -157,7 +157,10 @@ const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: 
     messages.push(<SendableMessage>{
         type: "poisonedPlayer",
         payload: {
-            nickname: targetPlayer.nickname
+            player: {
+                scanId: targetPlayer.id,
+                nickname: targetPlayer.nickname,
+            }
         },
         receivers: originPlayer.id
     });
@@ -292,8 +295,18 @@ const onAutoDeliveredIngredient = (state: GameState, player: Player, task: GameT
         messages.push(<SendableMessage>{
             type: "wizardsWon",
             payload: {
-                wizards: getWizards(state),
-                robots: getRobots(state)
+                wizards: getWizards(state).map(p => {
+                    return {
+                        scanId: p.id,
+                        nickname: p.nickname
+                    };
+                }),
+                robots: getRobots(state).map(p => {
+                    return {
+                        scanId: p.id,
+                        nickname: p.nickname
+                    };
+                }),
             },
             receivers: "all"
         });
@@ -340,7 +353,10 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
     messages.push(<SendableMessage>{
         type: "youFoundADeadBody",
         payload: {
-            deadPlayer: targetPlayer
+            player: {
+                scanId: targetPlayer.id,
+                nickname: targetPlayer.nickname
+            }
         },
         receivers: originPlayer.id
     })
@@ -349,7 +365,10 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
         messages.push(<SendableMessage>{
             type: "deadBodyWasFound",
             payload: {
-                deadPlayer: targetPlayer
+                player: {
+                    scanId: targetPlayer.id,
+                    nickname: targetPlayer.nickname
+                }
             },
             receivers: p.id
         })
@@ -394,7 +413,7 @@ const onPlayerReceivedPoison = (state: GameState, player: Player): GameReducerRe
         })
     };
     const message = <SendableMessage>{
-        type: "poisonReceived",
+        type: "receivedPoison",
         payload: {
             numberOfPoisons: player.poisons
         },
@@ -462,9 +481,10 @@ const buildInvalidTagMessage = (player: Player): ErrorMessage => {
 
 const buildYoureDeadMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
-        type: "youreDead",
+        type: "error",
         payload: {
-            nickname: player.nickname
+            imageId: "youreDead",
+            text: "Você está morto."
         },
         receivers: player.id
     }

@@ -39,9 +39,9 @@ export class ConnectionService {
             // Call all connection receivers
             for (const receiver of this.db.getAllConnectionReceivers()) {
                 receiver(<UserIdMessage>{
-                    type: 'connection',
+                    type: "connection",
                     payload: {
-                        userId: userId,
+                        userId,
                     },
                 });
             }
@@ -75,7 +75,7 @@ export class ConnectionService {
 
         for (const receiver of this.db.getAllDisconnectionReceivers()) {
             receiver(<UserIdMessage>{
-                type: 'disconnection',
+                type: "disconnection",
                 payload: {
                     userId: socket.handshake.query.userId,
                 },

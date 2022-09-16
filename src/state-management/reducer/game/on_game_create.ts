@@ -48,7 +48,14 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
             payload: {
                 role: player.role,
                 tasks: player.currentTasks,
-                robots: state.players.filter(p => p.role === "robot" && p.id !== player.id && player.role === "robot")
+                robots: state.players
+                    .filter(p => p.role === "robot" && p.id !== player.id && player.role === "robot")
+                    .map(p => {
+                        return {
+                            scanId: p.id,
+                            nickname: p.nickname
+                        };
+                    })
             },
             receivers: player.id
         });

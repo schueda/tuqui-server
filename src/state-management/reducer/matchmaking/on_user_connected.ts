@@ -18,10 +18,18 @@ export const onUserConnected = (state: MatchmakingState, message: UserIdMessage)
     };
 
     const youreConnectedMessage = <SendableMessage>{
-        type: 'youreConnected',
+        type: "youreConnected",
         receivers: message.payload.userId
     };
 
-    return [newState, [youreConnectedMessage], []];
+    const playerConnectedMessage = <SendableMessage>{
+        type: "userConnected",
+        payload: {
+            userId: message.payload.userId
+        },
+        receivers: state.users.filter(u => u.nickname).map(u => u.id),
+    }
+
+    return [newState, [youreConnectedMessage, playerConnectedMessage], []];
 }
 

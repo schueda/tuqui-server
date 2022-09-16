@@ -21,16 +21,21 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
     }
 
     const onLobbyMessage = <SendableMessage>{
-        type: 'onMeetingLobby',
+        type: "onMeetingLobby",
         receivers: player.id
     }
 
     const meetingCalledMessage = <SendableMessage>{
-        type: 'meetingCalled',
+        type: "meetingCalled",
         payload: {
-            players: newState.players,
-            alivePlayers: getAlivePlayers(newState).map(p => p.id ),
-            onMeetingPlayers: getOnMeetingPlayers(newState).map(p =>  p.id )
+            players: newState.players.map(p => {
+                return {
+                    scanId: p.id,
+                    nickname: p.nickname
+                }
+            }),
+            alivePlayersIds: getAlivePlayers(newState).map(p => p.id),
+            onMeetingPlayersIds: getOnMeetingPlayers(newState).map(p =>  p.id)
         },
         receivers: "all"
     }

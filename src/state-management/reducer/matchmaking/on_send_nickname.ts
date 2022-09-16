@@ -24,13 +24,18 @@ export const onSendNickname = (state: MatchmakingState, message: SendNicknameMes
         }),
     };
 
-    const playerEnteredLobbyMessage = <SendableMessage>{
-        type: 'playerEnteredLobby',
+    const youSentNicknameMessage = <SendableMessage>{
+        type: "youSentNickname",
+        receivers: user.id
+    }
+
+    const userSentNicknameMessage = <SendableMessage>{
+        type: "userSentNickname",
         payload: {
-            users: newState.users
+            userId: user.id
         },
         receivers: newState.users.filter(u => u.nickname).map(u => u.id)
     };
 
-    return [newState, [playerEnteredLobbyMessage], []];
+    return [newState, [youSentNicknameMessage, userSentNicknameMessage], []];
 }
