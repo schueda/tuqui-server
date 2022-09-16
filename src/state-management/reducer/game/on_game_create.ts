@@ -2,7 +2,6 @@ import { GameState, GameReducerReturn, Player } from '../../../types/state/game.
 import { GameCreateMessage } from '../matchmaking/on_confirmed_ready';
 import { defaultGameRules } from '../../../types/game_rules';
 import { SendableMessage } from '../../../types/message';
-import { logger } from '../../../logger';
 import { GameTaskGenerator } from '../../../types/game_task_generator';
 
 
@@ -41,25 +40,10 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
         mode: "gameRunning"
     };
 
-    const messages: SendableMessage[] = [];
-    state.players.forEach(player => {
-        messages.push({
-            type: "gameStarted",
-            payload: {
-                role: player.role,
-                tasks: player.currentTasks,
-                robots: state.players
-                    .filter(p => p.role === "robot" && p.id !== player.id && player.role === "robot")
-                    .map(p => {
-                        return {
-                            scanId: p.id,
-                            nickname: p.nickname
-                        };
-                    })
-            },
-            receivers: player.id
-        });
-    });
+    const gameStartedMessage = <SendableMessage>{
+        type: "gameStarted",
+        receivers: "all"
+    }
 
-    return [state, messages, []];
+    return [state, [gameStartedMessage], []];
 }

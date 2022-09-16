@@ -32,7 +32,8 @@ export const onSendNickname = (state: MatchmakingState, message: SendNicknameMes
     const userSentNicknameMessage = <SendableMessage>{
         type: "userSentNickname",
         payload: {
-            userId: user.id
+            userId: user.id,
+            nickname: message.payload.nickname
         },
         receivers: newState.users.filter(u => u.nickname).map(u => u.id)
     };

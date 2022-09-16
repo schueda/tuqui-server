@@ -10,11 +10,13 @@ import { onGameCreate } from '../state-management/reducer/game/on_game_create';
 import { onPlayerDied } from '../state-management/reducer/game/on_player_died';
 import { GameTaskGenerator } from '../types/game_task_generator';
 import { NewSchedulableAction } from '../types/action';
+import { UserIdMessage, SendableMessage } from '../types/message';
 
 export class GameService {
 
     constructor(private db: GameDatabase, private connSvc: ConnectionService, private scheSvc: SchedulingService, private stateLoggingSvc: StateLoggingService) {
         this.registerCreateGame();
+        this.registerFetchRole();
         this.registerScannedMessage();
         this.registerDeliverIngredient();
         this.registerKillPlayer();
@@ -41,6 +43,21 @@ export class GameService {
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
+        });
+    }
+
+    registerFetchRole() {
+        this.connSvc.registerMessageReceiver("fetchRole", ["user"], (message: UserIdMessage) => {
+            logger.debug(`[GameService.registerFetchRole] Received fetch role message ${JSON.stringify(message)}`);
+            const state = this.db.getGame();
+
+            this.connSvc.emit(<SendableMessage>{
+                type: "updateGameLobby",
+                payload: {
+                },
+                receivers: message.payload.userId
+            });
+
         });
     }
 
