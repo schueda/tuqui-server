@@ -11,13 +11,15 @@ import { onPlayerDied } from '../state-management/reducer/game/on_player_died';
 import { GameTaskGenerator } from '../types/game_task_generator';
 import { NewSchedulableAction } from '../types/action';
 import { UserIdMessage, SendableMessage } from '../types/message';
+import { getRobots } from '../types/state/game.state';
 
 export class GameService {
 
     constructor(private db: GameDatabase, private connSvc: ConnectionService, private scheSvc: SchedulingService, private stateLoggingSvc: StateLoggingService) {
         this.registerCreateGame();
-        this.registerFetchRole();
+        this.registerAskForRole();
         this.registerScannedMessage();
+        this.registerAskForIngredients();
         this.registerDeliverIngredient();
         this.registerKillPlayer();
     }
@@ -46,21 +48,31 @@ export class GameService {
         });
     }
 
-    registerFetchRole() {
-        this.connSvc.registerMessageReceiver("fetchRole", ["user"], (message: UserIdMessage) => {
-            logger.debug(`[GameService.registerFetchRole] Received fetch role message ${JSON.stringify(message)}`);
+    registerAskForRole() {
+        this.connSvc.registerMessageReceiver("askForRole", ["user"], (message: UserIdMessage) => {
+            logger.debug(`[GameService.registerAskForRole] Received ask for role message ${JSON.stringify(message)}`);
             const state = this.db.getGame();
+            const player = state.players.find(p => p.id === message.payload.userId);
+            if (!player) {
+                return;
+            }
 
             this.connSvc.emit(<SendableMessage>{
-                type: "updateGameLobby",
+                type: "role",
                 payload: {
+                    role: player.role,
+                    robots: getRobots(state).filter(p => p.id != player.id).map(p => {
+                        return {
+                            id: p.id,
+                            name: p.nickname
+                        }
+                    })
                 },
                 receivers: message.payload.userId
             });
 
         });
     }
-
 
     registerScannedMessage() {
         this.connSvc.registerMessageReceiver("scanned", ["user"], (message: ScannedMessage) => {
@@ -84,6 +96,26 @@ export class GameService {
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
+        });
+    }
+
+    registerAskForIngredients() {
+        this.connSvc.registerMessageReceiver("askForIngredients", ["user"], (message: UserIdMessage) => {
+            logger.debug(`[GameService.registerAskForIngredients] Received ask for ingredients message ${JSON.stringify(message)}`);
+            const state = this.db.getGame();
+            const player = state.players.find(p => p.id === message.payload.userId);
+            if (!player) {
+                return;
+            }
+
+            this.connSvc.emit(<SendableMessage>{
+                type: "ingredients",
+                payload: {
+                    ingredients: player.ingredients
+                },
+                receivers: message.payload.userId
+            });
+
         });
     }
 

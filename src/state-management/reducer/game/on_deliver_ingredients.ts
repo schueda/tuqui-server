@@ -52,9 +52,17 @@ export const onDeliverIngredient = (state: GameState, message: DeliverIngredient
                 ingredients: player.ingredients
             },
             receivers: player.id
-        }
+        };
 
-        return [newState, [deliveredIngredientMessage], []];
+        const updateTasksDoneMessage = <SendableMessage>{
+            type: "updateTasksDone",
+            payload: {
+                tasksDone: state.tasksDone
+            },
+            receivers: "all"
+        };
+
+        return [newState, [deliveredIngredientMessage, updateTasksDoneMessage], []];
     }
 
 

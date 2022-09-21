@@ -16,7 +16,7 @@ export class MatchmakingService {
         this.registerUserConnect();
         this.registerUserDisconnected();
 
-        this.registerFetchLobbyData();
+        this.registerAskForLobbyData();
 
         this.registerSendNickname();
         this.registerUserConfirmedReady();
@@ -107,9 +107,9 @@ export class MatchmakingService {
         });
     }
 
-    registerFetchLobbyData() {
-        this.connSvc.registerMessageReceiver('fetchLobbyData', ["user"], (message: UserIdMessage) => {
-            logger.debug(`[MatchmakingService.registerFetchLobby] Received fetchLobby message ${JSON.stringify(message)}`);
+    registerAskForLobbyData() {
+        this.connSvc.registerMessageReceiver('askForLobbyData', ["user"], (message: UserIdMessage) => {
+            logger.debug(`[MatchmakingService.registerAskForLobby] Received ask for lobby message ${JSON.stringify(message)}`);
 
             this.connSvc.emit(<SendableMessage>{
                 type: "updateGameLobby",

@@ -1,5 +1,5 @@
 import { NewSchedulableAction } from '../../../types/action';
-import { GameState, GameReducerReturn, Player, getWizards, getRobots } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player, getWizards, getRobots, getAlivePlayers } from '../../../types/state/game.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { defaultTags } from '../../../types/tags';
 import { defaultGameRules } from '../../../types/game_rules';
@@ -318,6 +318,14 @@ const onAutoDeliveredIngredient = (state: GameState, player: Player, task: GameT
             },
             receivers: player.id
         });
+
+        messages.push(<SendableMessage>{
+            type: "updateTasksDone",
+            payload: {
+                tasksDone: state.tasksDone
+            },
+            receivers: "all"
+        })
     }
 
     return [state, messages, []];
@@ -367,7 +375,8 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
             payload: {
                 player: {
                     scanId: targetPlayer.id,
-                    nickname: targetPlayer.nickname
+                    nickname: targetPlayer.nickname,
+                    deadCount: state.players.length - getAlivePlayers(state).length
                 }
             },
             receivers: p.id
@@ -461,9 +470,6 @@ const buildTaskNotInListMessage = (player: Player): ErrorMessage => {
 const buildOnTheCampfireMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
         type: "onTheCampfire",
-        payload: {
-            ingredients: player.ingredients
-        },
         receivers: player.id
     };
 }
