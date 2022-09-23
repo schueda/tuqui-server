@@ -12,14 +12,15 @@ export const onDeliverIngredient = (state: GameState, message: DeliverIngredient
 
     logger.debug(`Player ${player.id} delivered ingredient ${message.payload.ingredientId}`);
 
-    player.ingredients = player.ingredients.filter(i => i.uuid !== message.payload.ingredientId);
-
+    player.currentTasks = player.currentTasks.filter(i => i.uuid !== message.payload.ingredientId);
+    
     if (player.role === 'robot') {
+        player.poisons = player.poisons + 1;
         const newState = <GameState>{
             ...state,
             players: state.players.map(p => {
                 if (p.id === player.id) {
-                    p.poisons = p.poisons + 1;
+                    return player;
                 }
                 return p;
             })
@@ -28,7 +29,7 @@ export const onDeliverIngredient = (state: GameState, message: DeliverIngredient
         const gotPoisonMessage = <SendableMessage>{
             type: "gotPoison",
             payload: {
-                numberOfPoisons: player.poisons       
+                numberOfPoisons: player.poisons    
             },
             receivers: player.id
         }
@@ -49,7 +50,7 @@ export const onDeliverIngredient = (state: GameState, message: DeliverIngredient
         const deliveredIngredientMessage = <SendableMessage>{
             type: "deliveredIngredient",
             payload: {
-                ingredients: player.ingredients
+                tasks: player.currentTasks
             },
             receivers: player.id
         };
@@ -64,6 +65,4 @@ export const onDeliverIngredient = (state: GameState, message: DeliverIngredient
 
         return [newState, [deliveredIngredientMessage, updateTasksDoneMessage], []];
     }
-
-
 }

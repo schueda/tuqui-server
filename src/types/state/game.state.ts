@@ -10,7 +10,6 @@ export type Player = {
     poisonTime?: number;
     isAlive: boolean;
     diedRecently: boolean;
-    ingredients: GameTask[];
     poisons: number;
     currentTasks: GameTask[];
     taskBeingDone?: GameTask;

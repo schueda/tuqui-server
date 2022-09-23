@@ -20,7 +20,8 @@ export class GameTaskGenerator {
             payload: {
                 dificulty
             },
-            type: 'cleanJewels'
+            type: 'cleanJewels',
+            completed: false
         }
     }
 
@@ -30,7 +31,8 @@ export class GameTaskGenerator {
             scanId: 'TASK_1_TAG',
             name: 'Scan Player',
             payload: {},
-            type: 'scanPlayer'
+            type: 'scanPlayer',
+            completed: false
         }
     }
 
@@ -42,7 +44,8 @@ export class GameTaskGenerator {
             payload: {
                 clicks: weight * 10
             },
-            type: 'tapFast'
+            type: 'tapFast',
+            completed: false
         }
     }
 
@@ -63,7 +66,8 @@ export class GameTaskGenerator {
             payload: {
                 dificulty
             },
-            type: 'maze'
+            type: 'maze',
+            completed: false
         }
     }
 

@@ -4,4 +4,5 @@ export type GameTask = {
     name: string;
     payload: Record<string, unknown>;
     type: "cleanJewels" | "tapFast" | "scanPlayer" | "maze";
+    completed: boolean;
 }

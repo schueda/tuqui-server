@@ -8,7 +8,7 @@ import { logger } from '../../../logger';
 import { GameTaskGenerator } from '../../../types/game_task_generator';
 
 export type ScannedMessage = UserIdMessage & { payload: { scanResult: string } };
-export type ErrorMessage = SendableMessage & { payload: { imageId: string, text: string } }
+export type ErrorMessage = SendableMessage & { payload: { errorId: string } }
 
 export const internalStartMeetingActionType = 'startMeeting';
 
@@ -53,9 +53,6 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                     const task = originPlayer.currentTasks.find(t => t.type === 'scanPlayer');
                     if (task) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            if (originPlayer.ingredients.length < defaultGameRules.maxIngredients) {
-                                return onPlayerGotIngredient(state, originPlayer, task, taskGenerator);
-                            }
                             return [state, [buildUnloadBagMessage(originPlayer)], []];
                         }
                         if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
@@ -85,7 +82,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                 }
                 const task = originPlayer.currentTasks.find(t => t.scanId === message.payload.scanResult);
                 if (task) {
-                    if (defaultGameRules.taskDeliveryMode === "autoDelivery" || originPlayer.ingredients.length < defaultGameRules.maxIngredients) {
+                    if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
                         return onPlayerDoingTask(state, originPlayer, task);
                     }
                     return [state, [buildTaskNotInListMessage(originPlayer)], []];
@@ -108,8 +105,7 @@ const buildNotValidPlayerMessage = (originPlayer: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "notPlayingPlayer",
-            text: "Esse jogador não está jogando."
+            errorId: "notPlayingPlayer",
         },
         receivers: originPlayer.id
     }
@@ -119,8 +115,7 @@ const buildFinishTaskMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: player.taskBeingDone.scanId,
-            text: "Termine a task!"
+            errorId: "finishTask",
         },
         receivers: player.id
     }
@@ -185,8 +180,7 @@ const buildAlreadyPoisonedMessage = (originPlayer: Player, targetPlayer: Player)
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: targetPlayer.taskBeingDone.scanId,
-            text: `${targetPlayer.nickname} já está envenenado.`
+            errorId: "alreadyPoisoned",
         },
         receivers: originPlayer.id
     };
@@ -196,8 +190,7 @@ const buildOutOfPoisonMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "outOfPoison",
-            text: "Você não tem veneno."
+            errorId: "outOfPoison",
         },
         receivers: player.id
     };
@@ -207,20 +200,22 @@ const buildCantPoisonRobot = (originPlayer: Player, targetPlayer: Player): Error
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "cantPoisonRobot",
-            text: `Você não pode envenar ${targetPlayer.nickname}, ele também é um robô.`
+            errorId: "cantPoisonRobot"
         },
         receivers: originPlayer.id
     };
 }
 
 const onPlayerGotIngredient = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
-    player.currentTasks = player.currentTasks.filter(t => t !== task);
-    if (player.currentTasks.length === 0) {
-        player.currentTasks = taskGenerator.generateTasks();
-    }
+    player.currentTasks = player.currentTasks.map(t => {
+        if (t.uuid == task.uuid) {
+            return {
+                ...t,
+                completed: true
+            };
+        }
+    });
 
-    player.ingredients.push(task);
     player.taskBeingDone = null;
 
     state = <GameState>{
@@ -238,7 +233,6 @@ const onPlayerGotIngredient = (state: GameState, player: Player, task: GameTask,
     messages.push(<SendableMessage>{
         type: "gotIngredient",
         payload: {
-            numberOfingredients: player.ingredients.length,
             tasks: player.currentTasks
         },
         receivers: player.id
@@ -252,8 +246,7 @@ const buildScanningYourselfMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "scanningYourself",
-            text: "Você não pode se escanear. BURRO!"
+            errorId: "scanSelf"
         },
         receivers: player.id
     };
@@ -263,8 +256,7 @@ const buildUnloadBagMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "unloadBag",
-            text: "Você precisa descarregar sua mochila."
+            errorId: "unloadBag",
         },
         receivers: player.id
     };
@@ -337,8 +329,7 @@ const buildShouldntScanPlayerMessage = (originPlayer: Player, targetPlayer: Play
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "shouldntScanPlayer",
-            text: `Você não deve escanear ${targetPlayer.nickname}.`
+            errorId: "shouldntScanPlayer",
         },
         receivers: originPlayer.id
     };
@@ -375,9 +366,9 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
             payload: {
                 player: {
                     scanId: targetPlayer.id,
-                    nickname: targetPlayer.nickname,
-                    deadCount: state.players.length - getAlivePlayers(state).length
-                }
+                    nickname: targetPlayer.nickname
+                },
+                deadCount: state.players.length - getAlivePlayers(state).length
             },
             receivers: p.id
         })
@@ -390,8 +381,7 @@ const buildScannedGhostMessage = (originPlayer: Player, targetPlayer: Player): E
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: `scannedGhost${targetPlayer.id}`,
-            text: `${targetPlayer.nickname} é apenas um  fantasma.`
+            errorId: `scannedGhost`
         },
         receivers: originPlayer.id
     };
@@ -399,11 +389,10 @@ const buildScannedGhostMessage = (originPlayer: Player, targetPlayer: Player): E
 
 const onPlayerReceivedPoison = (state: GameState, player: Player): GameReducerReturn => {
     if (player.poisons >= defaultGameRules.maxPoisons) {
-        const message = <SendableMessage>{
+        const message = <ErrorMessage>{
             type: "error",
             payload: {
-                imageId: "maxPoisons",
-                text: "Você já tem o máximo de veneno."
+                errorId: "maxPoisons",
             },
             receivers: player.id
         }
@@ -460,8 +449,7 @@ const buildTaskNotInListMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "taskNotInList",
-            text: "Essa tarefa não está na sua lista."
+            errorId: "taskNotInList",
         },
         receivers: player.id
     };
@@ -470,6 +458,9 @@ const buildTaskNotInListMessage = (player: Player): ErrorMessage => {
 const buildOnTheCampfireMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
         type: "onTheCampfire",
+        payload: {
+            ingredients: player.ingredients
+        },
         receivers: player.id
     };
 }
@@ -478,19 +469,17 @@ const buildInvalidTagMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "invalidTag",
-            text: "Essa tag NFC não é válida."
+            errorId: "invalidTag",
         },
         receivers: player.id
     }
 }
 
-const buildYoureDeadMessage = (player: Player): SendableMessage => {
-    return <SendableMessage>{
+export const buildYoureDeadMessage = (player: Player): SendableMessage => {
+    return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "youreDead",
-            text: "Você está morto."
+            errorId: "youreDead",
         },
         receivers: player.id
     }

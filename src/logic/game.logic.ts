@@ -19,7 +19,6 @@ export class GameService {
         this.registerCreateGame();
         this.registerAskForRole();
         this.registerScannedMessage();
-        this.registerAskForIngredients();
         this.registerDeliverIngredient();
         this.registerKillPlayer();
     }
@@ -96,26 +95,6 @@ export class GameService {
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
-        });
-    }
-
-    registerAskForIngredients() {
-        this.connSvc.registerMessageReceiver("askForIngredients", ["user"], (message: UserIdMessage) => {
-            logger.debug(`[GameService.registerAskForIngredients] Received ask for ingredients message ${JSON.stringify(message)}`);
-            const state = this.db.getGame();
-            const player = state.players.find(p => p.id === message.payload.userId);
-            if (!player) {
-                return;
-            }
-
-            this.connSvc.emit(<SendableMessage>{
-                type: "ingredients",
-                payload: {
-                    ingredients: player.ingredients
-                },
-                receivers: message.payload.userId
-            });
-
         });
     }
 

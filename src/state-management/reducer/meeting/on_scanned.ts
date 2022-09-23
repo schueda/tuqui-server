@@ -1,10 +1,9 @@
 import { GameState, GameReducerReturn, Player, getOnMeetingPlayers, getAlivePlayers } from '../../../types/state/game.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { defaultTags } from '../../../types/tags';
-import { logger } from '../../../logger';
+import { ErrorMessage, buildYoureDeadMessage } from '../game/on_scanned';
 
 export type ScannedMessage = UserIdMessage & { payload: { scanResult: string } };
-export type ErrorMessage = SendableMessage & { payload: { imageId: string, text: string } }
 
 export const internalStartMeetingActionType = 'startMeeting';
 
@@ -72,19 +71,7 @@ const buildGoToCampfireMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            imageId: "goToCampfire",
-            text: "Vá para a campfire."
-        },
-        receivers: player.id
-    }
-}
-
-const buildYoureDeadMessage = (player: Player): SendableMessage => {
-    return <SendableMessage>{
-        type: "error",
-        payload: {
-            imageId: "youreDead",
-            text: "Você está morto."
+            errorId: "goToCampfire",
         },
         receivers: player.id
     }

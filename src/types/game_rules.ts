@@ -9,7 +9,6 @@ export type GameRules = {
     ingredientsToGetPoison: number;
     maxPoisons: number;
 
-    maxIngredients: number;
     numberOfCurrentTasks: number;
     tasksPerWizard: number;
 };
@@ -22,7 +21,6 @@ export const defaultGameRules: GameRules = {
     numberOfRobots: 1,
     ingredientsToGetPoison: 2,
     maxPoisons: 2,
-    maxIngredients: 10,
     numberOfCurrentTasks: 2,
     tasksPerWizard: 2,
 };
