@@ -459,7 +459,7 @@ const buildOnTheCampfireMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
         type: "onTheCampfire",
         payload: {
-            ingredients: player.ingredients
+            tasks: player.currentTasks
         },
         receivers: player.id
     };
