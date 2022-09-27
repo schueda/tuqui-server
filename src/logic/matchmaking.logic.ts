@@ -19,7 +19,7 @@ export class MatchmakingService {
         this.registerAskForLobbyData();
 
         this.registerSendNickname();
-        this.registerUserConfirmedReady();
+        this.registerConfirmReady();
     }
 
     state = <MatchmakingState>{
@@ -66,8 +66,8 @@ export class MatchmakingService {
         });
     }
 
-    registerUserConfirmedReady() {
-        this.connSvc.registerMessageReceiver('userConfirmedReady', ["user"], (message: UserIdMessage) => {
+    registerConfirmReady() {
+        this.connSvc.registerMessageReceiver('ConfirmReady', ["user"], (message: UserIdMessage) => {
             logger.debug(`[MatchmakingService.registerUserConfirmedReady] Received userConfirmedReady message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onConfirmedReady(this.state, message);

@@ -3,7 +3,7 @@ import { ConnectionService } from './connection.logic';
 import { logger } from '../logger';
 import { StateLoggingService } from './state-logging.logic';
 import { ScannedMessage, onScanned, playerDiedMessageType, PlayerDiedMessage } from '../state-management/reducer/game/on_scanned';
-import { onDeliverIngredient, DeliverIngredientMessage } from '../state-management/reducer/game/on_deliver_ingredients';
+import { onDeliverTask, DeliverIngredientMessage } from '../state-management/reducer/game/on_deliver_ingredients';
 import { SchedulingService } from './scheduling.logic';
 import { internalGameCreateActionType, GameCreateMessage } from '../state-management/reducer/matchmaking/on_confirmed_ready';
 import { onGameCreate } from '../state-management/reducer/game/on_game_create';
@@ -19,7 +19,7 @@ export class GameService {
         this.registerCreateGame();
         this.registerAskForRole();
         this.registerScannedMessage();
-        this.registerDeliverIngredient();
+        this.registerDeliverTask();
         this.registerKillPlayer();
     }
 
@@ -98,11 +98,11 @@ export class GameService {
         });
     }
 
-    registerDeliverIngredient() {
-        this.connSvc.registerMessageReceiver("deliverIngredient", ["user"], (message: DeliverIngredientMessage) => {
-            logger.debug(`[GameService.registerDeliverIngredient] Received deliver ingredient message ${JSON.stringify(message)}`);
+    registerDeliverTask() {
+        this.connSvc.registerMessageReceiver("deliverTask", ["user"], (message: DeliverIngredientMessage) => {
+            logger.debug(`[GameService.registerDeliverIngredient] Received deliver task message ${JSON.stringify(message)}`);
 
-            const [newState, messages, actions] = onDeliverIngredient(this.db.getGame(), message);
+            const [newState, messages, actions] = onDeliverTask(this.db.getGame(), message);
 
             this.stateLoggingSvc.log({
                 message: {

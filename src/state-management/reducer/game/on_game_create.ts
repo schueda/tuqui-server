@@ -40,10 +40,14 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
         mode: "gameRunning"
     };
 
-    const gameStartedMessage = <SendableMessage>{
+    var messages = players.map(p => <SendableMessage> {
         type: "gameStarted",
-        receivers: "all"
-    }
+        payload: {
+            role: p.role,
+            tasks: p.currentTasks
+        },
+        receivers: p.id,
+    })
 
-    return [state, [gameStartedMessage], []];
+    return [state, messages, []];
 }

@@ -231,7 +231,7 @@ const onPlayerGotIngredient = (state: GameState, player: Player, task: GameTask,
 
     var messages: SendableMessage[] = [];
     messages.push(<SendableMessage>{
-        type: "gotIngredient",
+        type: "completedTask",
         payload: {
             tasks: player.currentTasks
         },
