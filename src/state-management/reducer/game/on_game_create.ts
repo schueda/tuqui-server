@@ -1,4 +1,4 @@
-import { GameState, GameReducerReturn, Player } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player, getRobots, getWizards } from '../../../types/state/game.state';
 import { GameCreateMessage } from '../matchmaking/on_confirmed_ready';
 import { defaultGameRules } from '../../../types/game_rules';
 import { SendableMessage } from '../../../types/message';
@@ -14,7 +14,6 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
         role: "wizard",
         isAlive: true,
         diedRecently: false,
-        ingredients: [],
         poisons: 0,
         currentTasks: taskGenerator.generateTasks(),
         attendedToMeeting: false,
@@ -44,7 +43,10 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
         type: "gameStarted",
         payload: {
             role: p.role,
-            tasks: p.currentTasks
+            tasks: p.currentTasks,
+            robots: getRobots(state).filter(r => r.id !== p.id),
+            totalWizards: getWizards(state).length,
+            totalTasks: state.totalTasks
         },
         receivers: p.id,
     })

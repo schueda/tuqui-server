@@ -4,17 +4,17 @@ import { logger } from '../../../logger';
 import { defaultGameRules } from '../../../types/game_rules';
 import { ErrorMessage } from './on_scanned';
 
-export type DeliverIngredientMessage = UserIdMessage & { payload: { ingredientId: string } }
+export type DeliverTaskMessage = UserIdMessage & { payload: { taskId: string } }
 
-export const onDeliverTask = (state: GameState, message: DeliverIngredientMessage): GameReducerReturn => {
+export const onDeliverTask = (state: GameState, message: DeliverTaskMessage): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
     if (!player) {
         return [state, [], []];
     }
 
-    logger.debug(`Player ${player.id} delivered task ${message.payload.ingredientId}`);
+    logger.debug(`Player ${player.id} delivered task ${message.payload.taskId}`);
 
-    player.currentTasks = player.currentTasks.filter(i => i.uuid !== message.payload.ingredientId);
+    player.currentTasks = player.currentTasks.filter(i => i.uuid !== message.payload.taskId);
 
     if (player.role === 'robot') {
         if (player.poisons < defaultGameRules.maxPoisons) {
@@ -60,8 +60,8 @@ export const onDeliverTask = (state: GameState, message: DeliverIngredientMessag
             })
         }
 
-        const deliveredIngredientMessage = <SendableMessage>{
-            type: "deliveredIngredient",
+        const deliveredTaskMessage = <SendableMessage>{
+            type: "deliveredtask",
             payload: {
                 tasks: player.currentTasks
             },
@@ -76,6 +76,6 @@ export const onDeliverTask = (state: GameState, message: DeliverIngredientMessag
             receivers: "all"
         };
 
-        return [newState, [deliveredIngredientMessage, updateTasksDoneMessage], []];
+        return [newState, [deliveredTaskMessage, updateTasksDoneMessage], []];
     }
 }

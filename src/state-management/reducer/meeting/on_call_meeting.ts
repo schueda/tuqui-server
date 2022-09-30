@@ -7,6 +7,8 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
         return [state, [], []];
     };
 
+    //TODO: PAUSAR OS ENVENAMENTOS
+
     const newState = <GameState>{
         ...state,
         mode: "meetingCalled",
@@ -31,11 +33,11 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
             players: newState.players.map(p => {
                 return {
                     scanId: p.id,
-                    nickname: p.nickname
+                    nickname: p.nickname,
+                    alive: p.isAlive,
+                    attendedToMeeting: p.attendedToMeeting
                 }
-            }),
-            alivePlayersIds: getAlivePlayers(newState).map(p => p.id),
-            onMeetingPlayersIds: getOnMeetingPlayers(newState).map(p =>  p.id)
+            })
         },
         receivers: "all"
     }

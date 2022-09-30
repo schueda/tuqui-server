@@ -74,7 +74,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
             newState.mode = "gameRunning";
         }
     } else {
-        messages.push(buildUpdateVotingMessage(newState));
+        messages.push(buildUpdateVotingMessage(player));
     };
 
     return [newState, messages, []];
@@ -93,7 +93,9 @@ const buildPlayerKickedMessage = (state: GameState, kickedPlayer: Player): Senda
         payload: {
             player: {
                 scanId: kickedPlayer.id,
-                nickname: kickedPlayer.nickname
+                nickname: kickedPlayer.nickname,
+                alive: kickedPlayer.isAlive,
+                attendedToMeeting: kickedPlayer.attendedToMeeting
             }
         },
         receivers: state.players.filter(p => p.id !== kickedPlayer.id).map(p => p.id)
@@ -107,11 +109,11 @@ const buildYouWereKickedMessage = (kickedPlayer: Player): SendableMessage => {
     };
 }
 
-const buildUpdateVotingMessage = (state: GameState): SendableMessage => {
+const buildUpdateVotingMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
         type: "updateVoting",
         payload: {
-            playersIds: state.players.filter(p => p.votedPlayer || p.votedPlayer === null).map(p => p.id)
+            userId: player.id
         },
         receivers: "all"
     }
@@ -124,13 +126,17 @@ const buildWizardsWonMessage = (state: GameState): SendableMessage => {
             robots: getRobots(state).map(p => {
                 return {
                     scanId: p.id,
-                    nickname: p.nickname
+                    nickname: p.nickname,
+                    alive: p.isAlive,
+                    attendedToMeeting: p.attendedToMeeting
                 }
             }),
             wizards: getWizards(state).map(p => {
                 return {
                     scanId: p.id,
-                    nickname: p.nickname
+                    nickname: p.nickname,
+                    alive: p.isAlive,
+                    attendedToMeeting: p.attendedToMeeting
                 }
             })
         },
@@ -145,13 +151,17 @@ const buildRobotsWonMessage = (state: GameState): SendableMessage => {
             robots: getRobots(state).map(p => {
                 return {
                     scanId: p.id,
-                    nickname: p.nickname
+                    nickname: p.nickname,
+                    alive: p.isAlive,
+                    attendedToMeeting: p.attendedToMeeting
                 }
             }),
             wizards: getWizards(state).map(p => {
                 return {
                     scanId: p.id,
-                    nickname: p.nickname
+                    nickname: p.nickname,
+                    alive: p.isAlive,
+                    attendedToMeeting: p.attendedToMeeting
                 }
             })
         },

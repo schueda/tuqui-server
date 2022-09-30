@@ -6,7 +6,7 @@ export type GameRules = {
     taskCountMode: "updateRecurrently" | "updateOnDelivery" | "updateOnMeeting";
 
     numberOfRobots: number;
-    ingredientsToGetPoison: number;
+    tasksToGetPoison: number;
     maxPoisons: number;
 
     numberOfCurrentTasks: number;
@@ -19,7 +19,7 @@ export const defaultGameRules: GameRules = {
     taskDeliveryMode: "returnCenter",
     taskCountMode: "updateOnDelivery",
     numberOfRobots: 1,
-    ingredientsToGetPoison: 2,
+    tasksToGetPoison: 2,
     maxPoisons: 2,
     numberOfCurrentTasks: 2,
     tasksPerWizard: 2,

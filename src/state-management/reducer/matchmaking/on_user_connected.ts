@@ -3,6 +3,7 @@ import { UserIdMessage, SendableMessage } from '../../../types/message';
 
 export const onUserConnected = (state: MatchmakingState, message: UserIdMessage): MatchmakingReducerReturn => {
     if (state.users.find(u => u.id === message.payload.userId)) {
+        //TODO: Mensagem de card já sendo utilizado
         return [state, [], []];
     }
 

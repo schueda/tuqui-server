@@ -56,7 +56,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                             return [state, [buildUnloadBagMessage(originPlayer)], []];
                         }
                         if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
-                            return onAutoDeliveredIngredient(state, originPlayer, task, taskGenerator);
+                            return onAutoDeliveredTask(state, originPlayer, task, taskGenerator);
                         }
                     }
                     return [state, [buildShouldntScanPlayerMessage(originPlayer, targetPlayer)], []];
@@ -71,12 +71,12 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                 if (taskBeingDone) {
                     if (taskBeingDone.scanId === message.payload.scanResult) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            return onPlayerGotIngredient(state, originPlayer, taskBeingDone, taskGenerator);
+                            return onPlayerCompletedTask(state, originPlayer, taskBeingDone, taskGenerator);
                         }
                         if (originPlayer.role === "robot") {
                             return onPlayerReceivedPoison(state, originPlayer);
                         }
-                        return onAutoDeliveredIngredient(state, originPlayer, taskBeingDone, taskGenerator);
+                        return onAutoDeliveredTask(state, originPlayer, taskBeingDone, taskGenerator);
                     }
                     return [state, [buildFinishTaskMessage(originPlayer)], []];
                 }
@@ -155,6 +155,8 @@ const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: 
             player: {
                 scanId: targetPlayer.id,
                 nickname: targetPlayer.nickname,
+                alive: targetPlayer.isAlive,
+                attendedToMeeting: targetPlayer.attendedToMeeting
             }
         },
         receivers: originPlayer.id
@@ -206,7 +208,7 @@ const buildCantPoisonRobot = (originPlayer: Player, targetPlayer: Player): Error
     };
 }
 
-const onPlayerGotIngredient = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
+const onPlayerCompletedTask = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     player.currentTasks = player.currentTasks.map(t => {
         if (t.uuid == task.uuid) {
             return {
@@ -262,7 +264,7 @@ const buildUnloadBagMessage = (player: Player): ErrorMessage => {
     };
 }
 
-const onAutoDeliveredIngredient = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
+const onAutoDeliveredTask = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     player.currentTasks = player.currentTasks.filter(t => t !== task);
     if (player.currentTasks.length === 0) {
         player.currentTasks = taskGenerator.generateTasks();
@@ -354,7 +356,9 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
         payload: {
             player: {
                 scanId: targetPlayer.id,
-                nickname: targetPlayer.nickname
+                nickname: targetPlayer.nickname,
+                alive: targetPlayer.isAlive,
+                attendedToMeeting: targetPlayer.attendedToMeeting
             }
         },
         receivers: originPlayer.id
@@ -366,7 +370,9 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
             payload: {
                 player: {
                     scanId: targetPlayer.id,
-                    nickname: targetPlayer.nickname
+                    nickname: targetPlayer.nickname,
+                    alive: targetPlayer.isAlive,
+                    attendedToMeeting: targetPlayer.attendedToMeeting
                 },
                 deadCount: state.players.length - getAlivePlayers(state).length
             },

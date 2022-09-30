@@ -44,24 +44,25 @@ const onPlayerAttendedToMeeting = (state: GameState, player: Player): GameReduce
             return p;
         });
         newState.mode = "meetingHappening";
+        //TODO: CONTAR O TEMPO
         return [newState, [buildMeetingStartedMessage()], []];
     }
 
-    return [newState, [buildYoureOnLobbyMessage(player), buildPlayerOnMeetingLobbyMessage(newState)], []];
+    return [newState, [buildYoureOnLobbyMessage(player), buildPlayerOnMeetingLobbyMessage(player)], []];
 }
 
 const buildYoureOnLobbyMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
-        type: "onMeetingLobby",
+        type: "attendedToMeeting",
         receivers: player.id
     }
 }
 
-const buildPlayerOnMeetingLobbyMessage = (state: GameState): SendableMessage => {
+const buildPlayerOnMeetingLobbyMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
         type: "playerOnMeetingLobby",
         payload: {
-            playersIds: getOnMeetingPlayers(state).map(p => p.id)
+            userId: player.id
         },
         receivers: "all"
     }

@@ -80,7 +80,7 @@ export class GameTaskGenerator {
         const tasks = [
             this.generateCleanJewelsTask(this.generateRandomWeight()),
             this.generateScanPlayerTask(this.generateRandomWeight()),
-            this.generateTapFastTask(this.generateRandomWeight()),
+            // this.generateTapFastTask(this.generateRandomWeight()), NÃO SERÁ CHAMADO AINDA PORQUE NÃO TEMOS A TASK
             this.generateMazeTask(this.generateRandomWeight())
         ];
 
