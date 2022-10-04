@@ -16,11 +16,10 @@ export class GameTaskGenerator {
         return {
             uuid: generateUUID(),
             scanId: 'TASK_0_TAG',
-            name: 'Clean Jewels',
             payload: {
                 dificulty
             },
-            type: 'cleanJewels',
+            type: 'cleanTheGems',
             completed: false
         }
     }
@@ -28,23 +27,21 @@ export class GameTaskGenerator {
     private generateScanPlayerTask(weight: number): GameTask {
         return {
             uuid: generateUUID(),
-            scanId: 'TASK_1_TAG',
-            name: 'Scan Player',
+            scanId: 'none',
             payload: {},
-            type: 'scanPlayer',
+            type: 'scanThem',
             completed: false
         }
     }
 
-    private generateTapFastTask(weight: number): GameTask {
+    private generateBlowTheBugsTask(weight: number): GameTask {
         return {
             uuid: generateUUID(),
-            scanId: 'TASK_2_TAG',
-            name: 'Tap Fast',
+            scanId: 'TASK_1_TAG',
             payload: {
                 clicks: weight * 10
             },
-            type: 'tapFast',
+            type: 'blowTheBugs',
             completed: false
         }
     }
@@ -61,12 +58,21 @@ export class GameTaskGenerator {
 
         return {
             uuid: generateUUID(),
-            scanId: 'TASK_3_TAG',
-            name: 'Maze',
+            scanId: 'TASK_2_TAG',
             payload: {
                 dificulty
             },
-            type: 'maze',
+            type: 'outOfLab',
+            completed: false
+        }
+    }
+
+    private generateSpellTheSpellTask(weight: number): GameTask {
+        return {
+            uuid: generateUUID(),
+            scanId: 'TASK_3_TAG',
+            payload: {},
+            type: 'spellTheSpell',
             completed: false
         }
     }
