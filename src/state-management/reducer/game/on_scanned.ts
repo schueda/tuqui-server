@@ -50,7 +50,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                         }
                         return [state, [buildCantPoisonRobot(originPlayer, targetPlayer)], []];
                     }
-                    const task = originPlayer.currentTasks.find(t => t.type === 'scanPlayer');
+                    const task = originPlayer.currentTasks.find(t => t.type === 'scanThem');
                     if (task) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
                             return [state, [buildUnloadBagMessage(originPlayer)], []];

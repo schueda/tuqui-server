@@ -36,10 +36,15 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
 
     logger.debug("[onVote] New state.players: " + JSON.stringify(newState.players));
     if (newState.players.filter(p => p.votedPlayer).length === getAlivePlayers(newState).length) {
+        messages.push(buildVotingResultMessage(newState));
         const maxVotes = newState.players.reduce((max, p) => p.receivedVotes.length > max ? p.receivedVotes.length : max, 0);
 
         if (newState.skipVotes.length >= maxVotes) {
-            messages.push(buildMeetingSkippedMessage(newState));
+            if (newState.skipVotes.length === maxVotes) {
+                messages.push(buildVotingTiedMessage(newState));
+            } else {
+                messages.push(buildVotingSkippedMessage(newState));
+            }
         } else {
             const playersWithMaxVotes = newState.players.filter(p => p.receivedVotes.length === maxVotes);
 
@@ -61,7 +66,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                     messages.push(buildRobotsWonMessage(newState));
                 }
             } else {
-                messages.push(buildMeetingSkippedMessage(newState));
+                messages.push(buildVotingTiedMessage(newState));
             }
 
             newState.players = newState.players.map(p => {
@@ -80,11 +85,32 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
     return [newState, messages, []];
 }
 
-const buildMeetingSkippedMessage = (state: GameState): SendableMessage => {
+const buildVotingResultMessage = (state: GameState): SendableMessage => {
     return <SendableMessage>{
-        type: "meetingSkipped",
+        type: "votingResult",
+        payload: {
+            votes: state.players.map(p => {
+                return {
+                    votedPlayer: p.votedPlayer
+                }
+            })
+        },
+        receivers: "all"
+    }
+}
+
+const buildVotingSkippedMessage = (state: GameState): SendableMessage => {
+    return <SendableMessage>{
+        type: "votingSkipped",
         receivers: "all"
     };
+}
+
+const buildVotingTiedMessage = (state: GameState): SendableMessage => {
+    return <SendableMessage>{
+        type: "votingTied",
+        receivers: "all"
+    }
 }
 
 const buildPlayerKickedMessage = (state: GameState, kickedPlayer: Player): SendableMessage => {
