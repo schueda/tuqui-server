@@ -464,9 +464,6 @@ const buildTaskNotInListMessage = (player: Player): ErrorMessage => {
 const buildOnTheCampfireMessage = (player: Player): SendableMessage => {
     return <SendableMessage>{
         type: "onTheCampfire",
-        payload: {
-            tasks: player.currentTasks
-        },
         receivers: player.id
     };
 }
