@@ -12,6 +12,7 @@ import { GameTaskGenerator } from '../types/game_task_generator';
 import { NewSchedulableAction } from '../types/action';
 import { UserIdMessage, SendableMessage } from '../types/message';
 import { getRobots } from '../types/state/game.state';
+import { onExitTask } from '../state-management/reducer/game/on_exit_task';
 
 export class GameService {
 
@@ -19,6 +20,7 @@ export class GameService {
         this.registerCreateGame();
         this.registerAskForRole();
         this.registerScannedMessage();
+        this.registerExitTask();
         this.registerDeliverTask();
         this.registerKillPlayer();
     }
@@ -95,6 +97,28 @@ export class GameService {
             this.db.updateGame(newState);
             messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
+        });
+    }
+
+    registerExitTask() {
+        this.connSvc.registerMessageReceiver("exitTask", ["user"], (message: UserIdMessage) => {
+            logger.debug(`[GameService.regisrerExitTask] Received exit task message ${JSON.stringify(message)}`);
+
+            const [newState, messages, actions] = onExitTask(this.db.getGame(), message);
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message
+                },
+                newState: {
+                    ...newState
+                }
+            });
+
+            this.db.updateGame(newState);
+            messages.forEach(m => this.connSvc.emit(m));
+            this.processActions(actions);
+
         });
     }
 
