@@ -2,7 +2,7 @@ import { NewSchedulableAction } from '../action';
 import { SendableMessage } from '../message';
 
 export type MatchmakingUser = {
-    id: string;
+    userId: string;
     nickname?: string;
     ready: boolean;
 }

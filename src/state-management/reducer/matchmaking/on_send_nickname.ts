@@ -5,7 +5,7 @@ import { MatchmakingState, MatchmakingReducerReturn } from '../../../types/state
 export type SendNicknameMessage = UserIdMessage & { payload: { nickname: string } };
 
 export const onSendNickname = (state: MatchmakingState, message: SendNicknameMessage): MatchmakingReducerReturn => {
-    const user = state.users.find(u => u.id === message.payload.userId);
+    const user = state.users.find(u => u.userId === message.payload.userId);
     if (!user) {
         return [state, [], []];
     }
@@ -13,7 +13,7 @@ export const onSendNickname = (state: MatchmakingState, message: SendNicknameMes
     const newState = {
         ...state,
         users: state.users.map(u => {
-            if (u.id === user.id) {
+            if (u.userId === user.userId) {
                 return {
                     ...u,
                     nickname: message.payload.nickname
@@ -26,16 +26,18 @@ export const onSendNickname = (state: MatchmakingState, message: SendNicknameMes
 
     const youSentNicknameMessage = <SendableMessage>{
         type: "youSentNickname",
-        receivers: user.id
+        receivers: user.userId
     }
 
     const userSentNicknameMessage = <SendableMessage>{
         type: "userSentNickname",
         payload: {
-            userId: user.id,
-            nickname: message.payload.nickname
+            user: {
+                ...user, 
+                nickname: message.payload.nickname
+            }
         },
-        receivers: newState.users.filter(u => u.nickname).map(u => u.id)
+        receivers: newState.users.filter(u => u.nickname).map(u => u.userId)
     };
 
     return [newState, [youSentNicknameMessage, userSentNicknameMessage], []];

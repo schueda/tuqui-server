@@ -9,7 +9,7 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
     const gameRules = defaultGameRules;
 
     var players = <Player[]>message.payload.users.map(u => <Player>{
-        id: u.id,
+        id: u.userId,
         nickname: u.nickname,
         role: "wizard",
         isAlive: true,
@@ -39,7 +39,7 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
         mode: "gameRunning"
     };
 
-    var messages = players.map(p => <SendableMessage> {
+    var messages = players.map(p => <SendableMessage>{
         type: "gameStarted",
         payload: {
             role: p.role,

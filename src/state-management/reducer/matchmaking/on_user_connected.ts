@@ -1,20 +1,30 @@
-import { MatchmakingState, MatchmakingReducerReturn } from '../../../types/state/matchmaking.state';
+import { MatchmakingState, MatchmakingReducerReturn, MatchmakingUser } from '../../../types/state/matchmaking.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 
 export const onUserConnected = (state: MatchmakingState, message: UserIdMessage): MatchmakingReducerReturn => {
-    if (state.users.find(u => u.id === message.payload.userId)) {
-        //TODO: Mensagem de card já sendo utilizado
-        return [state, [], []];
+    const user = state.users.find(u => u.userId === message.payload.userId);
+    if (user) {
+        const userConnectedMessage = <SendableMessage>{
+            type: "userConnected",
+            payload: {
+                user
+            },
+            receivers: state.users.filter(u => u.nickname).map(u => u.userId),
+        }
+
+        return [state, [userConnectedMessage], []];
+    }
+
+    const newUser = <MatchmakingUser>{
+        userId: message.payload.userId,
+        ready: false
     }
 
     const newState = {
         ...state,
         users: [
             ...state.users,
-            {
-                id: message.payload.userId,
-                ready: false
-            }
+            newUser
         ]
     };
 
@@ -26,9 +36,9 @@ export const onUserConnected = (state: MatchmakingState, message: UserIdMessage)
     const playerConnectedMessage = <SendableMessage>{
         type: "userConnected",
         payload: {
-            userId: message.payload.userId
+            user: newUser
         },
-        receivers: state.users.filter(u => u.nickname).map(u => u.id),
+        receivers: state.users.filter(u => u.nickname).map(u => u.userId),
     }
 
     return [newState, [youreConnectedMessage, playerConnectedMessage], []];

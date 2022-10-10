@@ -67,7 +67,7 @@ export class MatchmakingService {
     }
 
     registerConfirmReady() {
-        this.connSvc.registerMessageReceiver('ConfirmReady', ["user"], (message: UserIdMessage) => {
+        this.connSvc.registerMessageReceiver('confirmReady', ["user"], (message: UserIdMessage) => {
             logger.debug(`[MatchmakingService.registerUserConfirmedReady] Received userConfirmedReady message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onConfirmedReady(this.state, message);
