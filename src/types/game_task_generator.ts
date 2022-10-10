@@ -4,20 +4,20 @@ import { generateUUID } from '../utils/generate_uuid';
 
 export class GameTaskGenerator {
     private generateCleanJewelsTask(weight: number): GameTask {
-        var dificulty = '';
+        var difficulty = '';
         if (weight <= 3) {
-            dificulty = 'easy';
+            difficulty = 'easy';
         } else if (weight <= 6) {
-            dificulty = 'medium';
+            difficulty = 'medium';
         } else {
-            dificulty = 'hard';
+            difficulty = 'hard';
         }
 
         return {
             uuid: generateUUID(),
             scanId: 'TASK_0_TAG',
             payload: {
-                dificulty
+                difficulty
             },
             type: 'cleanTheGems',
             completed: false
@@ -47,20 +47,20 @@ export class GameTaskGenerator {
     }
 
     private generateMazeTask(weight: number): GameTask {
-        var dificulty = '';
+        var difficulty = '';
         if (weight <= 3) {
-            dificulty = 'easy';
+            difficulty = 'easy';
         } else if (weight <= 6) {
-            dificulty = 'medium';
+            difficulty = 'medium';
         } else {
-            dificulty = 'hard';
+            difficulty = 'hard';
         }
 
         return {
             uuid: generateUUID(),
             scanId: 'TASK_2_TAG',
             payload: {
-                dificulty
+                difficulty
             },
             type: 'outOfLab',
             completed: false
