@@ -44,7 +44,14 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
         payload: {
             role: p.role,
             tasks: p.currentTasks,
-            robots: getRobots(state).filter(r => r.id !== p.id),
+            robots: getRobots(state).filter(r => r.id !== p.id).map(r => {
+                return {
+                    scanId: r.id,
+                    nickname: r.nickname,
+                    alive: r.isAlive,
+                    attendedToMeeting: r.attendedToMeeting
+                }
+            }),
             totalWizards: getWizards(state).length,
             totalTasks: state.totalTasks
         },
