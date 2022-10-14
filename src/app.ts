@@ -26,6 +26,7 @@ export class App {
         this.app.route("/").get((req, res) => {
             // res.sendFile(__dirname + '/index.html');
             logger.info("/ called");
+            res.send("Hello World!");
         });
     }
 

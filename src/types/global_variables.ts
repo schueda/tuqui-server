@@ -3,5 +3,6 @@ export type GlobalVariables = {
 }
 
 export const globalVariables: GlobalVariables = {
-    port: 3000
+    port: parseInt(process.env.PORT) || 3000
 };
+
