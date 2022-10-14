@@ -17,7 +17,10 @@ export class GameTaskGenerator {
             uuid: generateUUID(),
             scanId: 'TASK_0_TAG',
             payload: {
-                difficulty
+                type: 'difficulty',
+                data: {
+                    difficulty
+                }
             },
             type: 'cleanTheGems',
             completed: false
@@ -28,7 +31,6 @@ export class GameTaskGenerator {
         return {
             uuid: generateUUID(),
             scanId: 'none',
-            payload: {},
             type: 'scanThem',
             completed: false
         }
@@ -39,7 +41,10 @@ export class GameTaskGenerator {
             uuid: generateUUID(),
             scanId: 'TASK_1_TAG',
             payload: {
-                clicks: weight * 10
+                type: 'clicks',
+                data: {
+                    clicks: weight * 10
+                }
             },
             type: 'blowTheBugs',
             completed: false
@@ -60,7 +65,10 @@ export class GameTaskGenerator {
             uuid: generateUUID(),
             scanId: 'TASK_2_TAG',
             payload: {
-                difficulty
+                type: 'difficulty',
+                data: {
+                    difficulty
+                }
             },
             type: 'outOfLab',
             completed: false
@@ -71,7 +79,6 @@ export class GameTaskGenerator {
         return {
             uuid: generateUUID(),
             scanId: 'TASK_3_TAG',
-            payload: {},
             type: 'spellTheSpell',
             completed: false
         }
@@ -94,6 +101,6 @@ export class GameTaskGenerator {
             [tasks[i], tasks[j]] = [tasks[j], tasks[i]];
         }
 
-        return tasks.slice(0, defaultGameRules.numberOfCurrentTasks - 1);
+        return tasks.slice(0, defaultGameRules.numberOfCurrentTasks);
     }
 }
