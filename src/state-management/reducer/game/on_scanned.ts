@@ -19,9 +19,6 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
         return [state, [], []];
     }
 
-    logger.debug(`[game/onScanned] defaultTags: ${JSON.stringify(defaultTags)}`);
-    logger.debug(`[game/onScanned] scanResult: ${message.payload.scanResult}`);
-
     if (state.mode === "gameRunning") {
         if (originPlayer.isAlive) {
             if (defaultTags.playerTags.includes(message.payload.scanResult)) {
@@ -85,7 +82,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                     if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
                         return onPlayerDoingTask(state, originPlayer, task);
                     }
-                    return [state, [buildTaskNotInListMessage(originPlayer)], []];
+                    return [state, [buildTaskMessage(originPlayer, task)], []];
                 }
                 return [state, [buildTaskNotInListMessage(originPlayer)], []];
             }
@@ -449,6 +446,16 @@ const onPlayerDoingTask = (state: GameState, player: Player, task: GameTask): Ga
     }
 
     return [state, [message], []];
+}
+
+const buildTaskMessage = (player: Player, task: GameTask): SendableMessage => {
+    return <SendableMessage>{
+        type: "task",
+        payload: {
+            task
+        },
+        receivers: player.id
+    };
 }
 
 const buildTaskNotInListMessage = (player: Player): ErrorMessage => {
