@@ -1,5 +1,5 @@
 import { UserIdMessage, SendableMessage } from '../../../types/message';
-import { GameReducerReturn, GameState, getAlivePlayers, getOnMeetingPlayers } from '../../../types/state/game.state';
+import { GameReducerReturn, GameState } from '../../../types/state/game.state';
 
 export const onCallMeeting = (state: GameState, message: UserIdMessage): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
