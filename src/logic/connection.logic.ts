@@ -89,7 +89,10 @@ export class ConnectionService {
         // If message.receivers is 'all', send to all sockets
         if (message.receivers === 'all') {
             for (const socket of this.db.getAllSockets()) {
-                socket.emit(message.type, message.payload);
+                socket.emit(message.type, {
+                    type: message.type,
+                    payload: message.payload,
+                });
             }
         }
         // If message.receivers is a list, send only to the ones in the list

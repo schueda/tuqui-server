@@ -37,10 +37,10 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
                     alive: p.isAlive,
                     attendedToMeeting: p.attendedToMeeting
                 }
-            })
+            }),
         },
         receivers: "all"
     }
 
-    return[newState, [onLobbyMessage, meetingCalledMessage], []];
+    return [newState, [onLobbyMessage, meetingCalledMessage], []];
 }
