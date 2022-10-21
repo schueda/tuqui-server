@@ -22,12 +22,8 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
         }),
     }
 
-    const onLobbyMessage = <SendableMessage>{
-        type: "onMeetingLobby",
-        receivers: player.id
-    }
-
-    const meetingCalledMessage = <SendableMessage>{
+    var messages: SendableMessage[] = []
+    newState.players.forEach(p => messages.push(<SendableMessage>{
         type: "meetingCalled",
         payload: {
             players: newState.players.map(p => {
@@ -38,9 +34,11 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
                     attendedToMeeting: p.attendedToMeeting
                 }
             }),
+            isCaller: p.id === player.id
+            
         },
-        receivers: "all"
-    }
+        receivers: p.id
+    }))
 
-    return [newState, [onLobbyMessage, meetingCalledMessage], []];
+    return [newState, messages, []];
 }

@@ -1,4 +1,4 @@
-import { GameState, GameReducerReturn, Player, getAlivePlayers, getRobots, getWizards } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player, getAlivePlayers, getRobots, getWizards, getPlayerById } from '../../../types/state/game.state';
 import { VoteMessage } from '../../../logic/meeting.logic';
 import { SendableMessage } from '../../../types/message';
 import { logger } from '../../../logger';
@@ -30,7 +30,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
         })
     };
 
-    if (message.payload.votedId === undefined) {
+    if (message.payload.votedId === "skip") {
         newState.skipVotes.push(player.id);
     };
 
@@ -86,14 +86,34 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
 }
 
 const buildVotingResultMessage = (state: GameState): SendableMessage => {
+    const votes = state.players.map(p => {
+        const votedPlayer = getPlayerById(state, p.votedPlayer)
+        if (votedPlayer) {
+            return {
+                scanId: votedPlayer.id,
+                nickname: votedPlayer.nickname,
+                alive: votedPlayer.isAlive,
+                attendedToMeeting: votedPlayer.attendedToMeeting
+            }
+        }
+        return {
+            scanId: "skip",
+            nickname: "skip",
+            alive: false,
+            attendedToMeeting: false
+        }
+    })
+
+    // Randomize the order of the votes
+    for (let i = votes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [votes[i], votes[j]] = [votes[j], votes[i]];
+    }
+
     return <SendableMessage>{
         type: "votingResult",
         payload: {
-            votes: state.players.map(p => {
-                return {
-                    votedPlayer: p.votedPlayer
-                }
-            })
+            votes
         },
         receivers: "all"
     }
