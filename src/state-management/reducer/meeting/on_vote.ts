@@ -222,7 +222,7 @@ const buildRobotsWonMessage = (state: GameState): SendableMessage => {
     };
 }
 
-const resetState = (state: GameState) {
+const resetState = (state: GameState) => {
     state.players = state.players.map(p => {
         p.votedPlayer = null
         p.receivedVotes = [];
