@@ -99,11 +99,9 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                 return [newState, [message], []];
             }
         }
-    } else {
-        messages.push(buildUpdateVotingMessage(player));
-    };
+    }
 
-    return [newState, messages, []];
+    return [newState, [buildUpdateVotingMessage(player)], []];
 }
 
 
