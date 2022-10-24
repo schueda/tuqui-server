@@ -99,11 +99,9 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                 return [newState, [message], []];
             }
         }
-    } else {
-        messages.push(buildUpdateVotingMessage(player));
-    };
+    }
 
-    return [newState, messages, []];
+    return [newState, [buildUpdateVotingMessage(player)], []];
 }
 
 
@@ -222,7 +220,7 @@ const buildRobotsWonMessage = (state: GameState): SendableMessage => {
     };
 }
 
-const resetState = (state: GameState) {
+const resetState = (state: GameState) => {
     state.players = state.players.map(p => {
         p.votedPlayer = null
         p.receivedVotes = [];
