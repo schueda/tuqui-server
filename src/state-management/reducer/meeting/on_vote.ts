@@ -135,7 +135,7 @@ const buildPlayerKickedMessage = (state: GameState, kickedPlayer: Player, votes:
         payload: {
             votes,
             result: "playerKicked",
-            player: <ReducedPlayer>{
+            playerKicked: <ReducedPlayer>{
                 scanId: kickedPlayer.id,
                 nickname: kickedPlayer.nickname,
                 alive: kickedPlayer.isAlive,
