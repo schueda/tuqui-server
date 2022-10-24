@@ -19,6 +19,13 @@ export type Player = {
     receivedVotes: string[];
 }
 
+export type ReducedPlayer = {
+    scanId: string;
+    nickname: string;
+    attendedToMeeting: boolean;
+    alive: boolean;
+}
+
 export type GameState = {
     players: Player[];
     tasksDone: number;
@@ -47,6 +54,33 @@ export function getOnMeetingPlayers(state: GameState): Player[] {
 
 export function getPlayerById(state: GameState, id: string): Player {
     return state.players.find(p => p.id === id);
+}
+
+export function getVotes(state: GameState): ReducedPlayer[] {
+    const votes = state.players.map(p => {
+        const votedPlayer = getPlayerById(state, p.votedPlayer)
+        if (votedPlayer) {
+            return <ReducedPlayer>{
+                scanId: votedPlayer.id,
+                nickname: votedPlayer.nickname,
+                alive: votedPlayer.isAlive,
+                attendedToMeeting: votedPlayer.attendedToMeeting
+            }
+        }
+        return <ReducedPlayer>{
+            scanId: "skip",
+            nickname: "skip",
+            alive: false,
+            attendedToMeeting: false
+        }
+    })
+
+    // Randomize the order of the votes
+    for (let i = votes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [votes[i], votes[j]] = [votes[j], votes[i]];
+    }
+    return votes;
 }
 
 export type GameReducerReturn = [GameState, SendableMessage[], NewSchedulableAction[]];
