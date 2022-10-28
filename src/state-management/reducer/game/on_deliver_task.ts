@@ -17,7 +17,7 @@ export const onDeliverTask = (state: GameState, message: DeliverTaskMessage, tas
 
     player.currentTasks = player.currentTasks.filter(i => i.uuid !== message.payload.taskId);
     if (player.currentTasks.length === 0) {
-        player.currentTasks = taskGenerator.generateTasks();
+        player.currentTasks = taskGenerator.generateTasks(player.role);
     }
 
     if (player.role === 'robot') {

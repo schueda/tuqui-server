@@ -260,7 +260,7 @@ const buildUnloadBagMessage = (player: Player): ErrorMessage => {
 const onAutoDeliveredTask = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     player.currentTasks = player.currentTasks.filter(t => t !== task);
     if (player.currentTasks.length === 0) {
-        player.currentTasks = taskGenerator.generateTasks();
+        player.currentTasks = taskGenerator.generateTasks(player.role);
     }
 
     player.taskBeingDone = null;
