@@ -126,7 +126,7 @@ export class GameService {
         this.connSvc.registerMessageReceiver("deliverTask", ["user"], (message: DeliverTaskMessage) => {
             logger.debug(`[GameService.registerDeliverTask] Received deliver task message ${JSON.stringify(message)}`);
 
-            const [newState, messages, actions] = onDeliverTask(this.db.getGame(), message);
+            const [newState, messages, actions] = onDeliverTask(this.db.getGame(), message, this.taskGenerator);
 
             this.stateLoggingSvc.log({
                 message: {

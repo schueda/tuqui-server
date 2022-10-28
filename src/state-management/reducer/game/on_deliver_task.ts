@@ -3,10 +3,11 @@ import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { logger } from '../../../logger';
 import { defaultGameRules } from '../../../types/game_rules';
 import { ErrorMessage } from './on_scanned';
+import { GameTaskGenerator } from '../../../types/game_task_generator';
 
 export type DeliverTaskMessage = UserIdMessage & { payload: { taskId: string } }
 
-export const onDeliverTask = (state: GameState, message: DeliverTaskMessage): GameReducerReturn => {
+export const onDeliverTask = (state: GameState, message: DeliverTaskMessage, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
     if (!player) {
         return [state, [], []];
@@ -15,6 +16,9 @@ export const onDeliverTask = (state: GameState, message: DeliverTaskMessage): Ga
     logger.debug(`Player ${player.id} delivered task ${message.payload.taskId}`);
 
     player.currentTasks = player.currentTasks.filter(i => i.uuid !== message.payload.taskId);
+    if (player.currentTasks.length === 0) {
+        player.currentTasks = taskGenerator.generateTasks();
+    }
 
     if (player.role === 'robot') {
         if (player.poisons < defaultGameRules.maxPoisons) {
@@ -32,7 +36,9 @@ export const onDeliverTask = (state: GameState, message: DeliverTaskMessage): Ga
             const gotPoisonMessage = <SendableMessage>{
                 type: "gotPoison",
                 payload: {
-                    numberOfPoisons: player.poisons
+                    numberOfPoisons: player.poisons,
+                    tasks: player.currentTasks
+                    
                 },
                 receivers: player.id
             }
