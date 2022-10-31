@@ -36,11 +36,14 @@ export class GameService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "createGame"
                 },
                 newState: {
                     ...newState
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             this.db.updateGame(newState);
@@ -87,11 +90,14 @@ export class GameService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "scanned"
                 },
                 newState: {
                     ...newState
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             this.db.updateGame(newState);
@@ -108,11 +114,14 @@ export class GameService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "exitTask"
                 },
                 newState: {
                     ...newState
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             this.db.updateGame(newState);
@@ -130,11 +139,14 @@ export class GameService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "deliverTask"
                 },
                 newState: {
                     ...newState
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             this.db.updateGame(newState);
@@ -151,11 +163,14 @@ export class GameService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "killPlayer"
                 },
                 newState: {
                     ...newState
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             this.db.updateGame(newState);

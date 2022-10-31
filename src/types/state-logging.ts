@@ -4,4 +4,6 @@ export class StateLogEntry {
         timestamp?: number;
     };
     newState: Record<string, unknown>;
+    messages: Record<string, unknown>[];
+    scheduledActions: Record<string, unknown>[];
 }
