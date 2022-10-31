@@ -26,11 +26,14 @@ export class MeetingService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "callMeeting"
                 },
                 newState: {
                     ...newState
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             this.db.updateGame(newState);
@@ -51,11 +54,14 @@ export class MeetingService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "scanned"
                 },
                 newState: {
                     ...newState
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             this.db.updateGame(newState);
@@ -73,11 +79,14 @@ export class MeetingService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "vote"
                 },
                 newState: {
                     ...newState
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             this.db.updateGame(newState);
