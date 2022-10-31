@@ -1,4 +1,4 @@
-import { GameReducerReturn, GameState } from '../../../types/state/game.state';
+import { GameReducerReturn, GameState, getWizards, getRobots } from '../../../types/state/game.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { logger } from '../../../logger';
 import { defaultGameRules } from '../../../types/game_rules';
@@ -12,8 +12,6 @@ export const onDeliverTask = (state: GameState, message: DeliverTaskMessage, tas
     if (!player) {
         return [state, [], []];
     }
-
-    logger.debug(`Player ${player.id} delivered task ${message.payload.taskId}`);
 
     player.currentTasks = player.currentTasks.filter(i => i.uuid !== message.payload.taskId);
     if (player.currentTasks.length === 0) {
@@ -64,6 +62,18 @@ export const onDeliverTask = (state: GameState, message: DeliverTaskMessage, tas
                 }
                 return p;
             })
+        }
+
+        if (newState.tasksDone >= defaultGameRules.tasksPerWizard * getWizards(newState).length) {
+            const wizardsWon = <SendableMessage>{
+                type: "wizardsWon",
+                payload: {
+                    wizards: getWizards(newState),
+                    robots: getRobots(newState)
+                },
+                receivers: "all"
+            }
+            return [newState, [wizardsWon], []];
         }
 
         const deliveredTaskMessage = <SendableMessage>{

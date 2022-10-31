@@ -15,12 +15,12 @@ export type GameRules = {
 
 export const defaultGameRules: GameRules = {
     votationTime: 10,
-    timeToDie: 5000,
+    timeToDie: 15000,
     taskDeliveryMode: "returnCenter",
     taskCountMode: "updateOnDelivery",
-    numberOfRobots: 1,
+    numberOfRobots: 2,
     tasksToGetPoison: 2,
-    maxPoisons: 2,
+    maxPoisons: 1,
     numberOfCurrentTasks: 2,
-    tasksPerWizard: 2,
+    tasksPerWizard: 4,
 };
