@@ -77,7 +77,7 @@ export const onDeliverTask = (state: GameState, message: DeliverTaskMessage, tas
         }
 
         const deliveredTaskMessage = <SendableMessage>{
-            type: "deliveredtask",
+            type: "deliveredTask",
             payload: {
                 tasks: player.currentTasks
             },
