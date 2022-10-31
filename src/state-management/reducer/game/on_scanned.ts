@@ -50,7 +50,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                     const task = originPlayer.currentTasks.find(t => t.type === 'scanThem');
                     if (task) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            return [state, [buildUnloadBagMessage(originPlayer)], []];
+                            return onPlayerCompletedTask(state, originPlayer, task, taskGenerator);
                         }
                         if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
                             return onAutoDeliveredTask(state, originPlayer, task, taskGenerator);
