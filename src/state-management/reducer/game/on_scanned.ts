@@ -50,7 +50,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                     const task = originPlayer.currentTasks.find(t => t.type === 'scanThem');
                     if (task) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            return [state, [buildUnloadBagMessage(originPlayer)], []];
+                            return onPlayerCompletedTask(state, originPlayer, task, taskGenerator);
                         }
                         if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
                             return onAutoDeliveredTask(state, originPlayer, task, taskGenerator);
@@ -79,10 +79,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                 }
                 const task = originPlayer.currentTasks.find(t => t.scanId === message.payload.scanResult);
                 if (task) {
-                    if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
-                        return onPlayerDoingTask(state, originPlayer, task);
-                    }
-                    return [state, [buildTaskMessage(originPlayer, task)], []];
+                    return onPlayerDoingTask(state, originPlayer, task);
                 }
                 return [state, [buildTaskNotInListMessage(originPlayer)], []];
             }
@@ -207,12 +204,11 @@ const buildCantPoisonRobot = (originPlayer: Player, targetPlayer: Player): Error
 
 const onPlayerCompletedTask = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     player.currentTasks = player.currentTasks.map(t => {
-        if (t.uuid == task.uuid) {
-            return {
-                ...t,
-                completed: true
-            };
+        if (t.uuid === task.uuid) {
+            t.completed = true;
+            return t;
         }
+        return t;
     });
 
     player.taskBeingDone = null;
@@ -264,7 +260,7 @@ const buildUnloadBagMessage = (player: Player): ErrorMessage => {
 const onAutoDeliveredTask = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     player.currentTasks = player.currentTasks.filter(t => t !== task);
     if (player.currentTasks.length === 0) {
-        player.currentTasks = taskGenerator.generateTasks();
+        player.currentTasks = taskGenerator.generateTasks(player.role);
     }
 
     player.taskBeingDone = null;

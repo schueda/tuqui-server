@@ -35,11 +35,14 @@ export class MatchmakingService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "userConnect"
                 },
                 newState: {
                     ...this.state
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             messages.forEach(m => this.connSvc.emit(m));
@@ -55,11 +58,14 @@ export class MatchmakingService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "sendNickname"
                 },
                 newState: {
                     ...this.state
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             messages.forEach(m => this.connSvc.emit(m));
@@ -75,11 +81,14 @@ export class MatchmakingService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "confirmReady"
                 },
                 newState: {
                     ...this.state
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             messages.forEach(m => this.connSvc.emit(m));
@@ -96,11 +105,14 @@ export class MatchmakingService {
 
             this.stateLoggingSvc.log({
                 message: {
-                    ...message
+                    ...message,
+                    type: message.type || "userDisconnected"
                 },
                 newState: {
                     ...this.state
-                }
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
             });
 
             messages.forEach(m => this.connSvc.emit(m));

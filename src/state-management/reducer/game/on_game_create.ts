@@ -15,7 +15,7 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
         isAlive: true,
         diedRecently: false,
         poisons: 0,
-        currentTasks: taskGenerator.generateTasks(),
+        currentTasks: [],
         attendedToMeeting: false,
         receivedVotes: []
     });
@@ -28,6 +28,14 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
     for (var i = 0; i < gameRules.numberOfRobots; i++) {
         players[playerIds[i]].role = "robot";
     };
+
+    players.map(p => {
+            p.currentTasks = taskGenerator.generateTasks(p.role);
+            return p;
+        }
+    )
+
+
 
     state = <GameState>{
         players,

@@ -89,12 +89,16 @@ export class GameTaskGenerator {
         return Math.floor(Math.random() * 10) + 1;
     }
 
-    generateTasks(): GameTask[] {
+    generateTasks(role: "wizard" | "robot"): GameTask[] {
+
         const tasks = [
             this.generateCleanJewelsTask(this.generateRandomWeight()),
-            this.generateScanPlayerTask(this.generateRandomWeight()),
             this.generateMazeTask(this.generateRandomWeight())
         ];
+        
+        if (role === 'wizard') {
+            tasks.push(this.generateScanPlayerTask(this.generateRandomWeight()));
+        }
 
         for (let i = tasks.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));

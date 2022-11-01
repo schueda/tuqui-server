@@ -21,6 +21,7 @@ export type DI = {
 
     matchmakingStateLoggingSvc?: StateLoggingService;
     gameStateLoggingSvc?: StateLoggingService;
+    meetingLoggingSvc?: StateLoggingService;
 
     connectionSvc?: ConnectionService;
     schedulingSvc?: SchedulingService;
