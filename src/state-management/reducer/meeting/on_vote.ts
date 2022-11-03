@@ -33,7 +33,6 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
         newState.skipVotes.push(player.id);
     };
 
-    logger.debug("[onVote] New state.players: " + JSON.stringify(newState.players));
     if (newState.players.filter(p => p.votedPlayer).length === getAlivePlayers(newState).length) {
         const votes = getVotes(newState);
 
@@ -42,11 +41,11 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
         if (newState.skipVotes.length >= maxVotes) {
             if (newState.skipVotes.length === maxVotes) {
                 const message = buildVotingTiedMessage(newState, votes);
-                newState = resetState(newState);
+                resetState(newState);
                 return [newState, [message], []];
             } else {
                 const message = buildVotingSkippedMessage(newState, votes);
-                newState = resetState(newState);
+                resetState(newState);
                 return [newState, [message], []];
             }
         } else {
@@ -90,12 +89,12 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                 messages.push(buildPlayerKickedMessage(newState, playersWithMaxVotes[0], votes, winnerTeam, winners));
                 messages.push(buildYouWereKickedMessage(playersWithMaxVotes[0], votes, winnerTeam, winners));
 
-                newState = resetState(newState);
+                resetState(newState);
 
                 return [newState, messages, []];
             } else {
                 const message = buildVotingTiedMessage(newState, votes);
-                newState = resetState(newState);
+                resetState(newState);
                 return [newState, [message], []];
             }
         }
@@ -170,7 +169,7 @@ const buildUpdateVotingMessage = (player: Player): SendableMessage => {
     }
 }
 
-const resetState = (state: GameState): GameState => {
+const resetState = (state: GameState) => {
     state.players = state.players.map(p => {
         p.votedPlayer = null
         p.receivedVotes = [];
@@ -180,6 +179,4 @@ const resetState = (state: GameState): GameState => {
     });
     state.mode = "gameRunning";
     state.skipVotes = [];
-
-    return state;
 }
