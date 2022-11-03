@@ -1,4 +1,4 @@
-import { GameState, GameReducerReturn, Player, getOnMeetingPlayers, getAlivePlayers } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player, getOnMeetingPlayers, getAlivePlayers, ReducedPlayer } from '../../../types/state/game.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { defaultTags } from '../../../types/tags';
 import { ErrorMessage, buildYoureDeadMessage } from '../game/on_scanned';
@@ -83,7 +83,7 @@ const buildMeetingStartedMessage = (state: GameState): SendableMessage => {
         type: "meetingStarted",
         payload: {
             players: getAlivePlayers(state).map(p => {
-                return {
+                return <ReducedPlayer>{
                     scanId: p.id,
                     nickname: p.nickname,
                     alive: p.alive,
@@ -91,6 +91,6 @@ const buildMeetingStartedMessage = (state: GameState): SendableMessage => {
                 }
             })
         },
-        receivers: "all"
+        receivers: getAlivePlayers(state).map(p => p.id)
     }
 }

@@ -1,5 +1,5 @@
 import { UserIdMessage, SendableMessage } from '../../../types/message';
-import { GameReducerReturn, GameState } from '../../../types/state/game.state';
+import { GameReducerReturn, GameState, ReducedPlayer } from '../../../types/state/game.state';
 
 export const onCallMeeting = (state: GameState, message: UserIdMessage): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
@@ -27,15 +27,14 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
         type: "meetingCalled",
         payload: {
             players: newState.players.map(p => {
-                return {
+                return <ReducedPlayer>{
                     scanId: p.id,
                     nickname: p.nickname,
                     alive: p.alive,
                     attendedToMeeting: p.attendedToMeeting
                 }
             }),
-            isCaller: p.id === player.id
-
+            onMeeting: p.id === player.id || !p.alive
         },
         receivers: p.id
     }))
