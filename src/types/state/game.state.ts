@@ -57,7 +57,7 @@ export function getPlayerById(state: GameState, id: string): Player {
 }
 
 export function getVotes(state: GameState): ReducedPlayer[] {
-    const votes = state.players.map(p => {
+    const votes = getAlivePlayers(state).map(p => {
         const votedPlayer = getPlayerById(state, p.votedPlayer)
         if (votedPlayer) {
             return <ReducedPlayer>{
