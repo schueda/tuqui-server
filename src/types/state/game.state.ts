@@ -8,7 +8,7 @@ export type Player = {
     nickname: string;
     role: "wizard" | "robot";
     poisonTime?: number;
-    isAlive: boolean;
+    alive: boolean;
     diedRecently: boolean;
     poisons: number;
     currentTasks: GameTask[];
@@ -45,7 +45,7 @@ export function getRobots(state: GameState): Player[] {
 }
 
 export function getAlivePlayers(state: GameState): Player[] {
-    return state.players.filter(p => p.isAlive);
+    return state.players.filter(p => p.alive);
 }
 
 export function getOnMeetingPlayers(state: GameState): Player[] {
@@ -63,7 +63,7 @@ export function getVotes(state: GameState): ReducedPlayer[] {
             return <ReducedPlayer>{
                 scanId: votedPlayer.id,
                 nickname: votedPlayer.nickname,
-                alive: votedPlayer.isAlive,
+                alive: votedPlayer.alive,
                 attendedToMeeting: votedPlayer.attendedToMeeting
             }
         }

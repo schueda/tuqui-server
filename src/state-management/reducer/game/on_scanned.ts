@@ -1,5 +1,5 @@
 import { NewSchedulableAction } from '../../../types/action';
-import { GameState, GameReducerReturn, Player, getWizards, getRobots, getAlivePlayers } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, Player, getWizards, getRobots, getAlivePlayers, ReducedPlayer } from '../../../types/state/game.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { defaultTags } from '../../../types/tags';
 import { defaultGameRules } from '../../../types/game_rules';
@@ -20,7 +20,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
     }
 
     if (state.mode === "gameRunning") {
-        if (originPlayer.isAlive) {
+        if (originPlayer.alive) {
             if (defaultTags.playerTags.includes(message.payload.scanResult)) {
                 var targetPlayer = state.players.find(p => p.id === message.payload.scanResult);
                 if (!targetPlayer) {
@@ -34,7 +34,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                 if (originPlayer.taskBeingDone) {
                     return [state, [buildFinishTaskMessage(originPlayer)], []];
                 }
-                if (targetPlayer.isAlive) {
+                if (targetPlayer.alive) {
                     if (originPlayer.role === "robot") {
                         if (targetPlayer.role === "wizard") {
                             if (originPlayer.poisons > 0) {
@@ -149,7 +149,7 @@ const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: 
             player: {
                 scanId: targetPlayer.id,
                 nickname: targetPlayer.nickname,
-                alive: targetPlayer.isAlive,
+                alive: targetPlayer.alive,
                 attendedToMeeting: targetPlayer.attendedToMeeting
             }
         },
@@ -283,15 +283,19 @@ const onAutoDeliveredTask = (state: GameState, player: Player, task: GameTask, t
             type: "wizardsWon",
             payload: {
                 wizards: getWizards(state).map(p => {
-                    return {
+                    return <ReducedPlayer>{
                         scanId: p.id,
-                        nickname: p.nickname
+                        nickname: p.nickname,
+                        alive: p.alive,
+                        attendedToMeeting: p.attendedToMeeting
                     };
                 }),
                 robots: getRobots(state).map(p => {
-                    return {
+                    return <ReducedPlayer>{
                         scanId: p.id,
-                        nickname: p.nickname
+                        nickname: p.nickname,
+                        alive: p.alive,
+                        attendedToMeeting: p.attendedToMeeting
                     };
                 }),
             },
@@ -350,7 +354,7 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
             player: {
                 scanId: targetPlayer.id,
                 nickname: targetPlayer.nickname,
-                alive: targetPlayer.isAlive,
+                alive: targetPlayer.alive,
                 attendedToMeeting: targetPlayer.attendedToMeeting
             }
         },
@@ -364,7 +368,7 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
                 player: {
                     scanId: targetPlayer.id,
                     nickname: targetPlayer.nickname,
-                    alive: targetPlayer.isAlive,
+                    alive: targetPlayer.alive,
                     attendedToMeeting: targetPlayer.attendedToMeeting
                 },
                 deadCount: state.players.length - getAlivePlayers(state).length

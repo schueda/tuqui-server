@@ -30,12 +30,12 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
                 return {
                     scanId: p.id,
                     nickname: p.nickname,
-                    alive: p.isAlive,
+                    alive: p.alive,
                     attendedToMeeting: p.attendedToMeeting
                 }
             }),
             isCaller: p.id === player.id
-            
+
         },
         receivers: p.id
     }))

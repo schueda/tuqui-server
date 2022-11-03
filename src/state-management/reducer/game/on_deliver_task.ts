@@ -1,4 +1,4 @@
-import { GameReducerReturn, GameState, getWizards, getRobots } from '../../../types/state/game.state';
+import { GameReducerReturn, GameState, getWizards, getRobots, ReducedPlayer } from '../../../types/state/game.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { logger } from '../../../logger';
 import { defaultGameRules } from '../../../types/game_rules';
@@ -36,7 +36,7 @@ export const onDeliverTask = (state: GameState, message: DeliverTaskMessage, tas
                 payload: {
                     numberOfPoisons: player.poisons,
                     tasks: player.currentTasks
-                    
+
                 },
                 receivers: player.id
             }
@@ -68,8 +68,22 @@ export const onDeliverTask = (state: GameState, message: DeliverTaskMessage, tas
             const wizardsWon = <SendableMessage>{
                 type: "wizardsWon",
                 payload: {
-                    wizards: getWizards(newState),
-                    robots: getRobots(newState)
+                    wizards: getWizards(newState).map(w => {
+                        return <ReducedPlayer>{
+                            scanId: w.id,
+                            nickname: w.nickname,
+                            alive: w.alive,
+                            attendedToMeeting: w.attendedToMeeting
+                        }
+                    }),
+                    robots: getRobots(newState).map(w => {
+                        return <ReducedPlayer>{
+                            scanId: w.id,
+                            nickname: w.nickname,
+                            alive: w.alive,
+                            attendedToMeeting: w.attendedToMeeting
+                        }
+                    })
                 },
                 receivers: "all"
             }
@@ -87,7 +101,7 @@ export const onDeliverTask = (state: GameState, message: DeliverTaskMessage, tas
         const updateTasksDoneMessage = <SendableMessage>{
             type: "updateTasksDone",
             payload: {
-                tasksDone: state.tasksDone
+                tasksDone: newState.tasksDone
             },
             receivers: "all"
         };
