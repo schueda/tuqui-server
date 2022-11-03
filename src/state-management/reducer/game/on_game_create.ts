@@ -12,7 +12,7 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
         id: u.userId,
         nickname: u.nickname,
         role: "wizard",
-        isAlive: true,
+        alive: true,
         diedRecently: false,
         poisons: 0,
         currentTasks: [],
@@ -30,9 +30,9 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
     };
 
     players.map(p => {
-            p.currentTasks = taskGenerator.generateTasks(p.role);
-            return p;
-        }
+        p.currentTasks = taskGenerator.generateTasks(p.role);
+        return p;
+    }
     )
 
 
@@ -56,7 +56,7 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
                 return {
                     scanId: r.id,
                     nickname: r.nickname,
-                    alive: r.isAlive,
+                    alive: r.alive,
                     attendedToMeeting: r.attendedToMeeting
                 }
             }),

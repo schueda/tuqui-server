@@ -42,11 +42,11 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
         if (newState.skipVotes.length >= maxVotes) {
             if (newState.skipVotes.length === maxVotes) {
                 const message = buildVotingTiedMessage(newState, votes);
-                resetState(newState);
+                newState = resetState(newState);
                 return [newState, [message], []];
             } else {
                 const message = buildVotingSkippedMessage(newState, votes);
-                resetState(newState);
+                newState = resetState(newState);
                 return [newState, [message], []];
             }
         } else {
@@ -55,7 +55,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
             if (playersWithMaxVotes.length === 1) {
                 newState.players = newState.players.map(p => {
                     if (p.id === playersWithMaxVotes[0].id) {
-                        p.isAlive = false;
+                        p.alive = false;
                     }
                     return p;
                 });
@@ -68,7 +68,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                         return <ReducedPlayer>{
                             scanId: p.id,
                             nickname: p.nickname,
-                            alive: p.isAlive,
+                            alive: p.alive,
                             attendedToMeeting: p.attendedToMeeting
                         }
                     });
@@ -79,7 +79,7 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                         return <ReducedPlayer>{
                             scanId: p.id,
                             nickname: p.nickname,
-                            alive: p.isAlive,
+                            alive: p.alive,
                             attendedToMeeting: p.attendedToMeeting
                         }
                     });
@@ -90,12 +90,12 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
                 messages.push(buildPlayerKickedMessage(newState, playersWithMaxVotes[0], votes, winnerTeam, winners));
                 messages.push(buildYouWereKickedMessage(playersWithMaxVotes[0], votes, winnerTeam, winners));
 
-                resetState(newState);
+                newState = resetState(newState);
 
                 return [newState, messages, []];
             } else {
                 const message = buildVotingTiedMessage(newState, votes);
-                resetState(newState);
+                newState = resetState(newState);
                 return [newState, [message], []];
             }
         }
@@ -136,7 +136,7 @@ const buildPlayerKickedMessage = (state: GameState, kickedPlayer: Player, votes:
             playerKicked: <ReducedPlayer>{
                 scanId: kickedPlayer.id,
                 nickname: kickedPlayer.nickname,
-                alive: kickedPlayer.isAlive,
+                alive: kickedPlayer.alive,
                 attendedToMeeting: kickedPlayer.attendedToMeeting
             },
             winnerTeam,
@@ -170,57 +170,7 @@ const buildUpdateVotingMessage = (player: Player): SendableMessage => {
     }
 }
 
-const buildWizardsWonMessage = (state: GameState): SendableMessage => {
-    return <SendableMessage>{
-        type: "wizardsWon",
-        payload: {
-            robots: getRobots(state).map(p => {
-                return {
-                    scanId: p.id,
-                    nickname: p.nickname,
-                    alive: p.isAlive,
-                    attendedToMeeting: p.attendedToMeeting
-                }
-            }),
-            wizards: getWizards(state).map(p => {
-                return {
-                    scanId: p.id,
-                    nickname: p.nickname,
-                    alive: p.isAlive,
-                    attendedToMeeting: p.attendedToMeeting
-                }
-            })
-        },
-        receivers: "all"
-    };
-}
-
-const buildRobotsWonMessage = (state: GameState): SendableMessage => {
-    return <SendableMessage>{
-        type: "robotsWon",
-        payload: {
-            robots: getRobots(state).map(p => {
-                return {
-                    scanId: p.id,
-                    nickname: p.nickname,
-                    alive: p.isAlive,
-                    attendedToMeeting: p.attendedToMeeting
-                }
-            }),
-            wizards: getWizards(state).map(p => {
-                return {
-                    scanId: p.id,
-                    nickname: p.nickname,
-                    alive: p.isAlive,
-                    attendedToMeeting: p.attendedToMeeting
-                }
-            })
-        },
-        receivers: "all"
-    };
-}
-
-const resetState = (state: GameState) => {
+const resetState = (state: GameState): GameState => {
     state.players = state.players.map(p => {
         p.votedPlayer = null
         p.receivedVotes = [];
@@ -230,4 +180,6 @@ const resetState = (state: GameState) => {
     });
     state.mode = "gameRunning";
     state.skipVotes = [];
+
+    return state;
 }

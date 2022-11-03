@@ -1,10 +1,10 @@
-import { GameState, GameReducerReturn, getWizards, getRobots } from '../../../types/state/game.state';
+import { GameState, GameReducerReturn, getWizards, getRobots, ReducedPlayer } from '../../../types/state/game.state';
 import { PlayerDiedMessage } from './on_scanned';
 import { SendableMessage } from '../../../types/message';
 
 export const onPlayerDied = (state: GameState, message: PlayerDiedMessage): GameReducerReturn => {
     var player = message.payload.player;
-    player.isAlive = false;
+    player.alive = false;
     player.diedRecently = true;
 
     state = <GameState>{
@@ -17,20 +17,24 @@ export const onPlayerDied = (state: GameState, message: PlayerDiedMessage): Game
         })
     }
 
-    if (getWizards(state).filter(p => player.isAlive).length === 0) {
+    if (getWizards(state).filter(p => p.alive).length === 0) {
         const message = <SendableMessage>{
             type: "robotsWon",
             payload: {
                 wizards: getWizards(state).map(p => {
-                    return {
-                        id: p.id,
-                        nickname: p.nickname
+                    return <ReducedPlayer>{
+                        scanId: p.id,
+                        nickname: p.nickname,
+                        alive: p.alive,
+                        attendedToMeeting: p.attendedToMeeting
                     }
                 }),
                 robots: getRobots(state).map(p => {
-                    return {
-                        id: p.id,
-                        nickname: p.nickname
+                    return <ReducedPlayer>{
+                        scanId: p.id,
+                        nickname: p.nickname,
+                        alive: p.alive,
+                        attendedToMeeting: p.attendedToMeeting
                     }
                 })
             },

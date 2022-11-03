@@ -1,6 +1,8 @@
 import { MatchmakingState, MatchmakingReducerReturn, MatchmakingUser } from '../../../types/state/matchmaking.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 
+//Arrumar essa função inteirinha
+
 export const onUserConnected = (state: MatchmakingState, message: UserIdMessage): MatchmakingReducerReturn => {
     const user = state.users.find(u => u.userId === message.payload.userId);
     if (user) {

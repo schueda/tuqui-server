@@ -14,7 +14,7 @@ export const onScanned = (state: GameState, message: ScannedMessage): GameReduce
     }
 
     if (state.mode === "meetingCalled") {
-        if (originPlayer.isAlive) {
+        if (originPlayer.alive) {
             if (defaultTags.campfireTag === message.payload.scanResult) {
                 return onPlayerAttendedToMeeting(state, originPlayer);
             };
@@ -86,7 +86,7 @@ const buildMeetingStartedMessage = (state: GameState): SendableMessage => {
                 return {
                     scanId: p.id,
                     nickname: p.nickname,
-                    alive: p.isAlive,
+                    alive: p.alive,
                     attendedToMeeting: p.attendedToMeeting
                 }
             })
