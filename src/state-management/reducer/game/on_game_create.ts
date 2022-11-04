@@ -30,7 +30,7 @@ export const onGameCreate = (state: GameState, message: GameCreateMessage, taskG
     };
 
     players.map(p => {
-        p.currentTasks = taskGenerator.generateTasks(p.role);
+        p.currentTasks = taskGenerator.generateTasks(p.role, true);
         return p;
     }
     )
