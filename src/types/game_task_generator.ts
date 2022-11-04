@@ -37,13 +37,22 @@ export class GameTaskGenerator {
     }
 
     private generateBlowTheBugsTask(weight: number): GameTask {
+        var difficulty = '';
+        if (weight <= 3) {
+            difficulty = 'easy';
+        } else if (weight <= 6) {
+            difficulty = 'medium';
+        } else {
+            difficulty = 'hard';
+        }
+
         return {
             uuid: generateUUID(),
             scanId: 'TASK_1_TAG',
             payload: {
-                type: 'clicks',
+                type: 'difficulty',
                 data: {
-                    clicks: weight * 10
+                    difficulty
                 }
             },
             type: 'blowTheBugs',
@@ -93,7 +102,8 @@ export class GameTaskGenerator {
 
         const tasks = [
             this.generateCleanJewelsTask(this.generateRandomWeight()),
-            this.generateMazeTask(this.generateRandomWeight())
+            this.generateMazeTask(this.generateRandomWeight()),
+            this.generateBlowTheBugsTask(this.generateRandomWeight())
         ];
         
         if (role === 'wizard') {
