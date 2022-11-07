@@ -247,16 +247,6 @@ const buildScanningYourselfMessage = (player: Player): ErrorMessage => {
     };
 }
 
-const buildUnloadBagMessage = (player: Player): ErrorMessage => {
-    return <ErrorMessage>{
-        type: "error",
-        payload: {
-            errorId: "unloadBag",
-        },
-        receivers: player.id
-    };
-}
-
 const onAutoDeliveredTask = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     player.currentTasks = player.currentTasks.filter(t => t !== task);
     if (player.currentTasks.length === 0) {
@@ -446,16 +436,6 @@ const onPlayerDoingTask = (state: GameState, player: Player, task: GameTask): Ga
     }
 
     return [state, [message], []];
-}
-
-const buildTaskMessage = (player: Player, task: GameTask): SendableMessage => {
-    return <SendableMessage>{
-        type: "task",
-        payload: {
-            task
-        },
-        receivers: player.id
-    };
 }
 
 const buildTaskNotInListMessage = (player: Player): ErrorMessage => {
