@@ -3,10 +3,6 @@ import { UserIdMessage, SendableMessage } from '../../../types/message';
 
 
 export const onUserConnected = (state: MatchmakingState, message: UserIdMessage): MatchmakingReducerReturn => {
-    const youreConnectedMessage = <SendableMessage>{
-        type: "youreConnected",
-        receivers: message.payload.userId
-    };
 
     const user = state.users.find(u => u.userId === message.payload.userId);
     if (user) {
@@ -18,7 +14,12 @@ export const onUserConnected = (state: MatchmakingState, message: UserIdMessage)
             receivers: state.users.filter(u => u.nickname).map(u => u.userId),
         }
 
-        return [state, [userConnectedMessage], []];
+        const youreConnectedMessage = <SendableMessage>{
+            type: "youreConnected",
+            receivers: message.payload.userId
+        };
+
+        return [state, [youreConnectedMessage, userConnectedMessage], []];
     }
 
     const newUser = <MatchmakingUser>{
@@ -41,6 +42,11 @@ export const onUserConnected = (state: MatchmakingState, message: UserIdMessage)
         },
         receivers: newState.users.filter(u => u.nickname).map(u => u.userId),
     }
+
+    const youreConnectedMessage = <SendableMessage>{
+        type: "youreConnected",
+        receivers: message.payload.userId
+    };
 
     return [newState, [youreConnectedMessage, playerConnectedMessage], []];
 }
