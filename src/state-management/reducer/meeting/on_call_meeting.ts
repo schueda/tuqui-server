@@ -24,14 +24,6 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
     }
 
     var messages: SendableMessage[] = []
-    messages.push(<SendableMessage>{
-        type: "updateDeadCount",
-        payload: {
-            deadCount: state.players.length - getAlivePlayers(state).length
-        },
-        receivers: "all"
-    })
-    
     newState.players.forEach(p => messages.push(<SendableMessage>{
         type: "meetingCalled",
         payload: {
@@ -43,7 +35,8 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
                     attendedToMeeting: p.attendedToMeeting
                 }
             }),
-            onMeeting: p.id === player.id || !p.alive
+            onMeeting: p.id === player.id || !p.alive,
+            deadCount: state.players.length - getAlivePlayers(state).length
         },
         receivers: p.id
     }))
