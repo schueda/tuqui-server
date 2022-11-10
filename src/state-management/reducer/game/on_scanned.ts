@@ -241,7 +241,7 @@ const buildScanningYourselfMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            errorId: "scanSelf"
+            errorId: "cantScanSelf"
         },
         receivers: player.id
     };

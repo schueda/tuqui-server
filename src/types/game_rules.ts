@@ -18,7 +18,7 @@ export const defaultGameRules: GameRules = {
     timeToDie: 20000,
     taskDeliveryMode: "returnCenter",
     taskCountMode: "updateOnDelivery",
-    numberOfRobots: 2,
+    numberOfRobots: 1,
     tasksToGetPoison: 2,
     maxPoisons: 1,
     numberOfCurrentTasks: 2,
