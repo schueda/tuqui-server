@@ -23,6 +23,7 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
         }),
     }
 
+    var messages: SendableMessage[] = []
     messages.push(<SendableMessage>{
         type: "updateDeadCount",
         payload: {
@@ -31,7 +32,6 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
         receivers: "all"
     })
     
-    var messages: SendableMessage[] = []
     newState.players.forEach(p => messages.push(<SendableMessage>{
         type: "meetingCalled",
         payload: {
