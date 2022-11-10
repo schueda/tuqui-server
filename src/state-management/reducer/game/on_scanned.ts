@@ -346,7 +346,8 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
                 nickname: targetPlayer.nickname,
                 alive: targetPlayer.alive,
                 attendedToMeeting: targetPlayer.attendedToMeeting
-            }
+            },
+            deadCount: state.players.length - getAlivePlayers(state).length
         },
         receivers: originPlayer.id
     })

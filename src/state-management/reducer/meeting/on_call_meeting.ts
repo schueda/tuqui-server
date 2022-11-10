@@ -1,5 +1,5 @@
 import { UserIdMessage, SendableMessage } from '../../../types/message';
-import { GameReducerReturn, GameState, ReducedPlayer } from '../../../types/state/game.state';
+import { GameReducerReturn, GameState, ReducedPlayer, getAlivePlayers } from '../../../types/state/game.state';
 
 export const onCallMeeting = (state: GameState, message: UserIdMessage): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
@@ -17,11 +17,20 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
                 p.attendedToMeeting = true;
             }
             p.taskBeingDone = null;
+            p.diedRecently = false;
 
             return p;
         }),
     }
 
+    messages.push(<SendableMessage>{
+        type: "updateDeadCount",
+        payload: {
+            deadCount: state.players.length - getAlivePlayers(state).length
+        },
+        receivers: "all"
+    })
+    
     var messages: SendableMessage[] = []
     newState.players.forEach(p => messages.push(<SendableMessage>{
         type: "meetingCalled",
@@ -38,6 +47,7 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
         },
         receivers: p.id
     }))
+
 
     return [newState, messages, []];
 }

@@ -24,7 +24,7 @@ export const onUserConnected = (state: MatchmakingState, message: UserIdMessage)
 
     const newUser = <MatchmakingUser>{
         userId: message.payload.userId,
-        ready: false
+        isReady: false
     }
 
     const newState = {
