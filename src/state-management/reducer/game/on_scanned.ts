@@ -21,6 +21,19 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
 
     if (state.mode === "gameRunning") {
         if (originPlayer.alive) {
+            const taskBeingDone = originPlayer.taskBeingDone;
+            if (taskBeingDone) {
+                if (taskBeingDone.scanId === message.payload.scanResult) {
+                    if (defaultGameRules.taskDeliveryMode === "returnCenter") {
+                        return onPlayerCompletedTask(state, originPlayer, taskBeingDone, taskGenerator);
+                    }
+                    if (originPlayer.role === "robot") {
+                        return onPlayerReceivedPoison(state, originPlayer);
+                    }
+                    return onAutoDeliveredTask(state, originPlayer, taskBeingDone, taskGenerator);
+                }
+                return [state, [buildFinishTaskMessage(originPlayer)], []];
+            }
             if (defaultTags.playerTags.includes(message.payload.scanResult)) {
                 var targetPlayer = state.players.find(p => p.id === message.payload.scanResult);
                 if (!targetPlayer) {
@@ -64,19 +77,6 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                 return [state, [buildScannedGhostMessage(originPlayer, targetPlayer)], []];
             }
             if (defaultTags.taskTags.includes(message.payload.scanResult)) {
-                const taskBeingDone = originPlayer.taskBeingDone;
-                if (taskBeingDone) {
-                    if (taskBeingDone.scanId === message.payload.scanResult) {
-                        if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            return onPlayerCompletedTask(state, originPlayer, taskBeingDone, taskGenerator);
-                        }
-                        if (originPlayer.role === "robot") {
-                            return onPlayerReceivedPoison(state, originPlayer);
-                        }
-                        return onAutoDeliveredTask(state, originPlayer, taskBeingDone, taskGenerator);
-                    }
-                    return [state, [buildFinishTaskMessage(originPlayer)], []];
-                }
                 const task = originPlayer.currentTasks.find(t => t.scanId === message.payload.scanResult);
                 if (task) {
                     return onPlayerDoingTask(state, originPlayer, task);
@@ -352,7 +352,7 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
         receivers: originPlayer.id
     })
 
-    state.players.filter(p => p.id !== originPlayer.id).forEach(p => {
+    state.players.filter(p => (p.id !== originPlayer.id) && (p.id !== targetPlayer.id)).forEach(p => {
         messages.push(<SendableMessage>{
             type: "deadBodyWasFound",
             payload: {
