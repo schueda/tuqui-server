@@ -1,13 +1,14 @@
+import { SchedulingService } from '../../../logic/scheduling.logic';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 import { GameReducerReturn, GameState, ReducedPlayer, getAlivePlayers } from '../../../types/state/game.state';
 
-export const onCallMeeting = (state: GameState, message: UserIdMessage): GameReducerReturn => {
+export const onCallMeeting = (state: GameState, message: UserIdMessage, scheSvc: SchedulingService): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
     if (!player) {
         return [state, [], []];
     };
 
-    //TODO: PAUSAR OS ENVENAMENTOS
+    scheSvc.pauseAllActions();
 
     const newState = <GameState>{
         ...state,

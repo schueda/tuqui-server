@@ -7,6 +7,7 @@ import { logger } from '../logger';
 export class SchedulingService {
 
     private schedulableActions: SchedulableAction[] = [];
+    private pausedActions: NewSchedulableAction[] = [];
     private socketToServer: any;
 
     constructor(private db: SchedulingDatabase) {
@@ -43,6 +44,7 @@ export class SchedulingService {
         const identifiableAction = <SchedulableAction>{
             ...schedulableAction,
             id: Math.random().toString(36).substring(7),
+            creationTime: Date.now(),
             cancellable
         };
 
@@ -65,4 +67,23 @@ export class SchedulingService {
         this.schedulableActions.forEach(a => clearTimeout(a.cancellable));
         this.schedulableActions = [];
     }
+
+    pauseAllActions() {
+        this.schedulableActions.forEach(a => {
+            clearTimeout(a.cancellable);
+            a.id = null;
+            a.delay -= Date.now() - a.creationTime + 5000;
+
+            const newAction = <NewSchedulableAction>{
+                ...a
+            }
+
+            this.pausedActions.push(newAction);
+        });
+    }
+
+    resumeAllActions() {
+        this.pausedActions.forEach(pa => this.addSchedulableAction(pa));
+    }
+
 }

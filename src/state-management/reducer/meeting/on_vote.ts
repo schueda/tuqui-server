@@ -2,10 +2,11 @@ import { GameState, GameReducerReturn, Player, getAlivePlayers, getRobots, getWi
 import { VoteMessage } from '../../../logic/meeting.logic';
 import { SendableMessage } from '../../../types/message';
 import { logger } from '../../../logger';
+import { SchedulingService } from '../../../logic/scheduling.logic';
 
 type Role = "wizard" | "robot" | null;
 
-export const onVote = (state: GameState, message: VoteMessage): GameReducerReturn => {
+export const onVote = (state: GameState, message: VoteMessage, scheSvc: SchedulingService): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
     if (!player) {
         return [state, [], []];
@@ -34,6 +35,8 @@ export const onVote = (state: GameState, message: VoteMessage): GameReducerRetur
     };
 
     if (newState.players.filter(p => p.votedPlayer).length === getAlivePlayers(newState).length) {
+        scheSvc.resumeAllActions();
+
         const votes = getVotes(newState);
 
         const maxVotes = newState.players.reduce((max, p) => p.receivedVotes.length > max ? p.receivedVotes.length : max, 0);
