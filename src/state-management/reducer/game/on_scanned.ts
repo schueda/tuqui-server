@@ -21,6 +21,19 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
 
     if (state.mode === "gameRunning") {
         if (originPlayer.alive) {
+            const taskBeingDone = originPlayer.taskBeingDone;
+            if (taskBeingDone) {
+                if (taskBeingDone.scanId === message.payload.scanResult) {
+                    if (defaultGameRules.taskDeliveryMode === "returnCenter") {
+                        return onPlayerCompletedTask(state, originPlayer, taskBeingDone, taskGenerator);
+                    }
+                    if (originPlayer.role === "robot") {
+                        return onPlayerReceivedPoison(state, originPlayer);
+                    }
+                    return onAutoDeliveredTask(state, originPlayer, taskBeingDone, taskGenerator);
+                }
+                return [state, [buildFinishTaskMessage(originPlayer)], []];
+            }
             if (defaultTags.playerTags.includes(message.payload.scanResult)) {
                 var targetPlayer = state.players.find(p => p.id === message.payload.scanResult);
                 if (!targetPlayer) {
@@ -64,19 +77,6 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                 return [state, [buildScannedGhostMessage(originPlayer, targetPlayer)], []];
             }
             if (defaultTags.taskTags.includes(message.payload.scanResult)) {
-                const taskBeingDone = originPlayer.taskBeingDone;
-                if (taskBeingDone) {
-                    if (taskBeingDone.scanId === message.payload.scanResult) {
-                        if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            return onPlayerCompletedTask(state, originPlayer, taskBeingDone, taskGenerator);
-                        }
-                        if (originPlayer.role === "robot") {
-                            return onPlayerReceivedPoison(state, originPlayer);
-                        }
-                        return onAutoDeliveredTask(state, originPlayer, taskBeingDone, taskGenerator);
-                    }
-                    return [state, [buildFinishTaskMessage(originPlayer)], []];
-                }
                 const task = originPlayer.currentTasks.find(t => t.scanId === message.payload.scanResult);
                 if (task) {
                     return onPlayerDoingTask(state, originPlayer, task);
@@ -241,17 +241,7 @@ const buildScanningYourselfMessage = (player: Player): ErrorMessage => {
     return <ErrorMessage>{
         type: "error",
         payload: {
-            errorId: "scanSelf"
-        },
-        receivers: player.id
-    };
-}
-
-const buildUnloadBagMessage = (player: Player): ErrorMessage => {
-    return <ErrorMessage>{
-        type: "error",
-        payload: {
-            errorId: "unloadBag",
+            errorId: "cantScanSelf"
         },
         receivers: player.id
     };
@@ -260,7 +250,7 @@ const buildUnloadBagMessage = (player: Player): ErrorMessage => {
 const onAutoDeliveredTask = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
     player.currentTasks = player.currentTasks.filter(t => t !== task);
     if (player.currentTasks.length === 0) {
-        player.currentTasks = taskGenerator.generateTasks(player.role);
+        player.currentTasks = taskGenerator.generateTasks(player.role, false);
     }
 
     player.taskBeingDone = null;
@@ -356,12 +346,13 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
                 nickname: targetPlayer.nickname,
                 alive: targetPlayer.alive,
                 attendedToMeeting: targetPlayer.attendedToMeeting
-            }
+            },
+            deadCount: state.players.length - getAlivePlayers(state).length
         },
         receivers: originPlayer.id
     })
 
-    state.players.filter(p => p.id !== originPlayer.id).forEach(p => {
+    state.players.filter(p => (p.id !== originPlayer.id) && (p.id !== targetPlayer.id)).forEach(p => {
         messages.push(<SendableMessage>{
             type: "deadBodyWasFound",
             payload: {
@@ -446,16 +437,6 @@ const onPlayerDoingTask = (state: GameState, player: Player, task: GameTask): Ga
     }
 
     return [state, [message], []];
-}
-
-const buildTaskMessage = (player: Player, task: GameTask): SendableMessage => {
-    return <SendableMessage>{
-        type: "task",
-        payload: {
-            task
-        },
-        receivers: player.id
-    };
 }
 
 const buildTaskNotInListMessage = (player: Player): ErrorMessage => {

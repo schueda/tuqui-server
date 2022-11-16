@@ -43,7 +43,7 @@ export const buildApp = (() => {
     di.gameStateLoggingSvc = gameStateLoggingSvc;
 
     const meetingStateLoggingSvc = new StateLoggingService('game-meeting', eventBusSvc);
-    di.meetingStateLoggingSvc = meetingStateLoggingSvc;
+    di.meetingLoggingSvc = meetingStateLoggingSvc;
 
     // Logic
     const connectionSvc = new ConnectionService(connectionDb);

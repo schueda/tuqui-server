@@ -15,7 +15,7 @@ export type GameRules = {
 
 export const defaultGameRules: GameRules = {
     votationTime: 10,
-    timeToDie: 15000,
+    timeToDie: 20000,
     taskDeliveryMode: "returnCenter",
     taskCountMode: "updateOnDelivery",
     numberOfRobots: 1,

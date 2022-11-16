@@ -5,6 +5,7 @@ export type SchedulableActionCategory = "kill";
 export type SchedulableAction = {
     id: string;
     message: Message;
+    creationTime: number;
     delay: number;
     category?: SchedulableActionCategory;
     cancellable?: NodeJS.Timeout;

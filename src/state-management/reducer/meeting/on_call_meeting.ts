@@ -1,13 +1,14 @@
+import { SchedulingService } from '../../../logic/scheduling.logic';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
-import { GameReducerReturn, GameState, ReducedPlayer } from '../../../types/state/game.state';
+import { GameReducerReturn, GameState, ReducedPlayer, getAlivePlayers } from '../../../types/state/game.state';
 
-export const onCallMeeting = (state: GameState, message: UserIdMessage): GameReducerReturn => {
+export const onCallMeeting = (state: GameState, message: UserIdMessage, scheSvc: SchedulingService): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
     if (!player) {
         return [state, [], []];
     };
 
-    //TODO: PAUSAR OS ENVENAMENTOS
+    scheSvc.pauseAllActions();
 
     const newState = <GameState>{
         ...state,
@@ -17,6 +18,7 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
                 p.attendedToMeeting = true;
             }
             p.taskBeingDone = null;
+            p.diedRecently = false;
 
             return p;
         }),
@@ -34,10 +36,12 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage): GameRed
                     attendedToMeeting: p.attendedToMeeting
                 }
             }),
-            onMeeting: p.id === player.id || !p.alive
+            onMeeting: p.id === player.id || !p.alive,
+            deadCount: state.players.length - getAlivePlayers(state).length
         },
         receivers: p.id
     }))
+
 
     return [newState, messages, []];
 }

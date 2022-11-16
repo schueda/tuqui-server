@@ -22,7 +22,7 @@ export class MeetingService {
         this.connSvc.registerMessageReceiver("callMeeting", ["user"], (message: UserIdMessage) => {
             logger.debug(`[GameService.registerCallMeeting] Received call meeting message ${JSON.stringify(message)}`);
 
-            const [newState, messages, actions] = onCallMeeting(this.db.getGame(), message);
+            const [newState, messages, actions] = onCallMeeting(this.db.getGame(), message, this.scheSvc);
 
             this.stateLoggingSvc.log({
                 message: {
@@ -75,7 +75,7 @@ export class MeetingService {
         this.connSvc.registerMessageReceiver('vote', ["user"], (message: VoteMessage) => {
             logger.debug(`[MeetingService.registerVote] Received vote message ${JSON.stringify(message)}`);
 
-            const [newState, messages, actions] = onVote(this.db.getGame(), message);
+            const [newState, messages, actions] = onVote(this.db.getGame(), message, this.scheSvc);
 
             this.stateLoggingSvc.log({
                 message: {

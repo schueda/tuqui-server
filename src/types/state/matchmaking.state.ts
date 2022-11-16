@@ -4,7 +4,7 @@ import { SendableMessage } from '../message';
 export type MatchmakingUser = {
     userId: string;
     nickname?: string;
-    ready: boolean;
+    isReady: boolean;
 }
 
 export type MatchmakingState = {

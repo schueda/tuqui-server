@@ -1,9 +1,9 @@
 import { MatchmakingState, MatchmakingReducerReturn, MatchmakingUser } from '../../../types/state/matchmaking.state';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
 
-//Arrumar essa função inteirinha
 
 export const onUserConnected = (state: MatchmakingState, message: UserIdMessage): MatchmakingReducerReturn => {
+
     const user = state.users.find(u => u.userId === message.payload.userId);
     if (user) {
         const userConnectedMessage = <SendableMessage>{
@@ -14,12 +14,17 @@ export const onUserConnected = (state: MatchmakingState, message: UserIdMessage)
             receivers: state.users.filter(u => u.nickname).map(u => u.userId),
         }
 
-        return [state, [userConnectedMessage], []];
+        const youreConnectedMessage = <SendableMessage>{
+            type: "youreConnected",
+            receivers: message.payload.userId
+        };
+
+        return [state, [youreConnectedMessage, userConnectedMessage], []];
     }
 
     const newUser = <MatchmakingUser>{
         userId: message.payload.userId,
-        ready: false
+        isReady: false
     }
 
     const newState = {
@@ -30,18 +35,18 @@ export const onUserConnected = (state: MatchmakingState, message: UserIdMessage)
         ]
     };
 
-    const youreConnectedMessage = <SendableMessage>{
-        type: "youreConnected",
-        receivers: message.payload.userId
-    };
-
     const playerConnectedMessage = <SendableMessage>{
         type: "userConnected",
         payload: {
             user: newUser
         },
-        receivers: state.users.filter(u => u.nickname).map(u => u.userId),
+        receivers: newState.users.filter(u => u.nickname).map(u => u.userId),
     }
+
+    const youreConnectedMessage = <SendableMessage>{
+        type: "youreConnected",
+        receivers: message.payload.userId
+    };
 
     return [newState, [youreConnectedMessage, playerConnectedMessage], []];
 }
