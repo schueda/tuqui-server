@@ -13,6 +13,8 @@ import { NewSchedulableAction } from '../types/action';
 import { UserIdMessage, SendableMessage } from '../types/message';
 import { getRobots } from '../types/state/game.state';
 import { onExitTask } from '../state-management/reducer/game/on_exit_task';
+import { onPlayerExit } from '../state-management/reducer/game/on_player_exit';
+import { onGameRestart } from '../state-management/reducer/game/on_game_restart';
 
 export class GameService {
 
@@ -23,6 +25,8 @@ export class GameService {
         this.registerExitTask();
         this.registerDeliverTask();
         this.registerKillPlayer();
+        this.registerPlayerExit();
+        this.registerRestartGame();
     }
 
     taskGenerator = new GameTaskGenerator();
@@ -177,6 +181,54 @@ export class GameService {
             messages.forEach(m => this.connSvc.emit(m));
             this.processActions(actions);
 
+        });
+    }
+
+    registerPlayerExit() {
+        this.connSvc.registerMessageReceiver("exit", ["user"], (message: UserIdMessage) => {
+            logger.debug(`[GameService.registerPlayerExit] Received player exit message ${JSON.stringify(message)}`);
+
+            const [newState, messages, actions] = onPlayerExit(this.db.getGame(), message);
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message,
+                    type: message.type || "exit"
+                },
+                newState: {
+                    ...newState
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
+            });
+
+            this.db.updateGame(newState);
+            messages.forEach(m => this.connSvc.emit(m));
+            this.processActions(actions);
+        });
+    }
+
+    registerRestartGame() {
+        this.connSvc.registerMessageReceiver("restartGame", ["service"], (message: UserIdMessage) => {
+            logger.debug(`[GameService.registerRestartGame] Received restart game message ${JSON.stringify(message)}`);
+
+            const [newState, messages, actions] = onGameRestart(this.db.getGame(), message);
+
+            this.stateLoggingSvc.log({
+                message: {
+                    ...message,
+                    type: message.type || "restartGame"
+                },
+                newState: {
+                    ...newState
+                },
+                messages: messages.map(m => ({ ...m })),
+                scheduledActions: actions.map(a => ({ ...a }))
+            });
+
+            this.db.updateGame(newState);
+            messages.forEach(m => this.connSvc.emit(m));
+            this.processActions(actions);
         });
     }
 

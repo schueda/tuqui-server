@@ -25,7 +25,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
             if (taskBeingDone) {
                 if (taskBeingDone.scanId === message.payload.scanResult) {
                     if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                        return onPlayerCompletedTask(state, originPlayer, taskBeingDone, taskGenerator);
+                        return onPlayerCompletedTask(state, originPlayer, taskBeingDone);
                     }
                     if (originPlayer.role === "robot") {
                         return onPlayerReceivedPoison(state, originPlayer);
@@ -63,7 +63,7 @@ export const onScanned = (state: GameState, message: ScannedMessage, taskGenerat
                     const task = originPlayer.currentTasks.find(t => t.type === 'scanThem');
                     if (task) {
                         if (defaultGameRules.taskDeliveryMode === "returnCenter") {
-                            return onPlayerCompletedTask(state, originPlayer, task, taskGenerator);
+                            return onPlayerCompletedTask(state, originPlayer, task);
                         }
                         if (defaultGameRules.taskDeliveryMode === "autoDelivery") {
                             return onAutoDeliveredTask(state, originPlayer, task, taskGenerator);
@@ -164,7 +164,6 @@ const onPlayerPoisoned = (state: GameState, originPlayer: Player, targetPlayer: 
             payload: {
                 player: targetPlayer
             },
-
         },
         delay: defaultGameRules.timeToDie,
     });
@@ -202,7 +201,7 @@ const buildCantPoisonRobot = (originPlayer: Player, targetPlayer: Player): Error
     };
 }
 
-const onPlayerCompletedTask = (state: GameState, player: Player, task: GameTask, taskGenerator: GameTaskGenerator): GameReducerReturn => {
+const onPlayerCompletedTask = (state: GameState, player: Player, task: GameTask): GameReducerReturn => {
     player.currentTasks = player.currentTasks.map(t => {
         if (t.uuid === task.uuid) {
             t.completed = true;
@@ -338,19 +337,29 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
     };
 
     var messages: SendableMessage[] = [];
-    messages.push(<SendableMessage>{
-        type: "youFoundADeadBody",
-        payload: {
-            player: {
-                scanId: targetPlayer.id,
-                nickname: targetPlayer.nickname,
-                alive: targetPlayer.alive,
-                attendedToMeeting: targetPlayer.attendedToMeeting
+    messages.push(
+        <SendableMessage>{
+            type: "youFoundADeadBody",
+            payload: {
+                player: {
+                    scanId: targetPlayer.id,
+                    nickname: targetPlayer.nickname,
+                    alive: targetPlayer.alive,
+                    attendedToMeeting: targetPlayer.attendedToMeeting
+                },
+                deadCount: state.players.length - getAlivePlayers(state).length
             },
-            deadCount: state.players.length - getAlivePlayers(state).length
+            receivers: originPlayer.id
         },
-        receivers: originPlayer.id
-    })
+
+        <SendableMessage>{
+            type: "yourBodyWasFound",
+            payload: {
+                deadCount: state.players.length - getAlivePlayers(state).length
+            },
+            receivers: targetPlayer.id
+        }
+    );
 
     state.players.filter(p => (p.id !== originPlayer.id) && (p.id !== targetPlayer.id)).forEach(p => {
         messages.push(<SendableMessage>{
