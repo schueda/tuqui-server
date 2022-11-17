@@ -185,7 +185,7 @@ export class GameService {
     }
 
     registerPlayerExit() {
-        this.connSvc.registerMessageReceiver("exit", ["user"], (message: UserIdMessage) => {
+        this.connSvc.registerMessageReceiver("exitGame", ["user"], (message: UserIdMessage) => {
             logger.debug(`[GameService.registerPlayerExit] Received player exit message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onPlayerExit(this.db.getGame(), message);
@@ -209,7 +209,7 @@ export class GameService {
     }
 
     registerRestartGame() {
-        this.connSvc.registerMessageReceiver("restartGame", ["service"], (message: UserIdMessage) => {
+        this.connSvc.registerMessageReceiver("restartGame", ["user"], (message: UserIdMessage) => {
             logger.debug(`[GameService.registerRestartGame] Received restart game message ${JSON.stringify(message)}`);
 
             const [newState, messages, actions] = onGameRestart(this.db.getGame(), message);
