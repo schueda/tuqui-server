@@ -38,6 +38,13 @@ export const onConfirmedReady = (state: MatchmakingState, message: UserIdMessage
             delay: 0
         };
 
+        newState.users = newState.users.map(u => {
+            return {
+                ...u,
+                isReady: false
+            };
+        });
+
         return [newState, [], [internalGameCreateAction]];
     }
 
