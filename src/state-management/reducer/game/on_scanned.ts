@@ -347,7 +347,7 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
                     alive: targetPlayer.alive,
                     attendedToMeeting: targetPlayer.attendedToMeeting
                 },
-                deadCount: state.players.length - getAlivePlayers(state).length
+                deadCount: getWizards(state).length - getWizards(state).filter(p => !p.alive).length
             },
             receivers: originPlayer.id
         },
@@ -355,7 +355,7 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
         <SendableMessage>{
             type: "yourBodyWasFound",
             payload: {
-                deadCount: state.players.length - getAlivePlayers(state).length
+                deadCount: getWizards(state).length - getWizards(state).filter(p => !p.alive).length
             },
             receivers: targetPlayer.id
         }
@@ -371,7 +371,7 @@ const onBodyScanned = (state: GameState, originPlayer: Player, targetPlayer: Pla
                     alive: targetPlayer.alive,
                     attendedToMeeting: targetPlayer.attendedToMeeting
                 },
-                deadCount: state.players.length - getAlivePlayers(state).length
+                deadCount: getWizards(state).length - getWizards(state).filter(p => !p.alive).length
             },
             receivers: p.id
         })

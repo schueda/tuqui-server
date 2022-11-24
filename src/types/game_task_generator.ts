@@ -85,9 +85,24 @@ export class GameTaskGenerator {
     }
 
     private generateSpellTheSpellTask(weight: number): GameTask {
+        var difficulty = '';
+        if (weight <= 3) {
+            difficulty = 'easy';
+        } else if (weight <= 6) {
+            difficulty = 'medium';
+        } else {
+            difficulty = 'hard';
+        }
+
         return {
             uuid: generateUUID(),
             scanId: 'TASK_3_TAG',
+            payload: {
+                type: 'difficulty',
+                data: {
+                    difficulty
+                }
+            },
             type: 'spellTheSpell',
             completed: false
         }
@@ -103,7 +118,8 @@ export class GameTaskGenerator {
         const tasks = [
             this.generateCleanJewelsTask(this.generateRandomWeight()),
             this.generateMazeTask(this.generateRandomWeight()),
-            this.generateBlowTheBugsTask(this.generateRandomWeight())
+            this.generateBlowTheBugsTask(this.generateRandomWeight()),
+            this.generateSpellTheSpellTask(this.generateRandomWeight()),
         ];
         
         if (role === 'wizard' && !isGameStart) {

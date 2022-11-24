@@ -3,7 +3,7 @@ import { UserIdMessage, SendableMessage } from '../../../types/message';
 
 export const onGameRestart = (state: GameState, message: UserIdMessage): GameReducerReturn => {
     const restartMessage = <SendableMessage>{
-        type: "gameRestart",
+        type: "gameRestarted",
         receivers: "all"
     }
 

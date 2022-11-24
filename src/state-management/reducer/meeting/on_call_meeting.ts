@@ -1,6 +1,6 @@
 import { SchedulingService } from '../../../logic/scheduling.logic';
 import { UserIdMessage, SendableMessage } from '../../../types/message';
-import { GameReducerReturn, GameState, ReducedPlayer, getAlivePlayers } from '../../../types/state/game.state';
+import { GameReducerReturn, GameState, ReducedPlayer, getAlivePlayers, getWizards } from '../../../types/state/game.state';
 
 export const onCallMeeting = (state: GameState, message: UserIdMessage, scheSvc: SchedulingService): GameReducerReturn => {
     const player = state.players.find(p => p.id === message.payload.userId);
@@ -37,7 +37,7 @@ export const onCallMeeting = (state: GameState, message: UserIdMessage, scheSvc:
                 }
             }),
             onMeeting: p.id === player.id || !p.alive,
-            deadCount: state.players.length - getAlivePlayers(state).length
+            deadCount: getWizards(state).length - getWizards(state).filter(p => !p.alive).length
         },
         receivers: p.id
     }))
