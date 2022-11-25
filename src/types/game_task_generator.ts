@@ -15,7 +15,7 @@ export class GameTaskGenerator {
 
         return {
             uuid: generateUUID(),
-            scanId: 'TASK_0_TAG',
+            scanId: 'TASK_JEWELS_TAG',
             payload: {
                 type: 'difficulty',
                 data: {
@@ -48,7 +48,7 @@ export class GameTaskGenerator {
 
         return {
             uuid: generateUUID(),
-            scanId: 'TASK_1_TAG',
+            scanId: 'TASK_BUGS_TAG',
             payload: {
                 type: 'difficulty',
                 data: {
@@ -72,7 +72,7 @@ export class GameTaskGenerator {
 
         return {
             uuid: generateUUID(),
-            scanId: 'TASK_2_TAG',
+            scanId: 'TASK_MAZE_TAG',
             payload: {
                 type: 'difficulty',
                 data: {
@@ -96,7 +96,7 @@ export class GameTaskGenerator {
 
         return {
             uuid: generateUUID(),
-            scanId: 'TASK_3_TAG',
+            scanId: 'TASK_SPELL_TAG',
             payload: {
                 type: 'difficulty',
                 data: {
