@@ -6,16 +6,16 @@ export type Tags = {
 
 export const defaultTags: Tags = {
     playerTags: [
-        "PLAYER_PURPLE_TAG",
-        "PLAYER_BLUE_ROBOT_TAG",
-        "PLAYER_GREEN_NATURE_TAG",
-        "PLAYER_DARKNESS_TAG",
-        "PLAYER_YELLOW_TAG",
-        "PLAYER_LILAS_TAG",
-        "PLAYER_RED_TAG",
+        "PLAYER_BLACK_TAG",
+        "PLAYER_BROWN_TAG",
+        "PLAYER_DARK_BLUE_TAG",
         "PLAYER_GREEN_TAG",
-        "PLAYER_BLOOD_TAG",
-        "PLAYER_BLUE_TAG",
+        "PLAYER_LIGHT_BLUE_TAG",
+        "PLAYER_ORANGE_TAG",
+        "PLAYER_PINK_TAG",
+        "PLAYER_PURPLE_TAG",
+        "PLAYER_RED_TAG",
+        "PLAYER_YELLOW_TAG"
     ],
     campfireTag: "CAMPFIRE_TAG",
     taskTags: [
